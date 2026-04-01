@@ -19,8 +19,13 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 
 /* HOME */
 #home{display:flex;flex-direction:column;height:100%;padding:env(safe-area-inset-top) 24px 0}
-.top-bar{display:flex;justify-content:flex-end;padding:16px 0 0}
+.top-bar{display:flex;justify-content:flex-end;gap:8px;padding:16px 0 0}
+.top-btn{width:36px;height:36px;border-radius:50%;background:var(--card);border:none;color:var(--text);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .lang-btn{width:36px;height:36px;border-radius:50%;background:var(--card);border:none;color:var(--text);font-size:14px;font-weight:500;cursor:pointer}
+/* Reminder FAB */
+.reminder-fab{position:fixed;bottom:32px;right:24px;width:52px;height:52px;border-radius:50%;background:var(--card);border:1px solid rgba(255,255,255,.1);color:var(--text);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;box-shadow:0 4px 16px rgba(0,0,0,.4);transition:transform .15s}
+.reminder-fab:active{transform:scale(.9)}
+.reminder-fab .badge{position:absolute;top:-2px;right:-2px;width:18px;height:18px;border-radius:50%;background:var(--sage);color:#000;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .home-title{text-align:center;font-size:34px;font-weight:200;margin:8px 0 20px;letter-spacing:2px}
 .cards{display:flex;flex-direction:column;gap:14px;overflow-y:auto;flex:1;padding-bottom:40px}
 .section-label{font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin:8px 0 4px}
@@ -129,9 +134,13 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 
 <!-- HOME -->
 <div id="home">
-  <div class="top-bar"><button class="lang-btn" onclick="toggleLang()">EN</button></div>
+  <div class="top-bar">
+    <button class="top-btn" id="home-sound-btn" onclick="toggleHomeSound()">&#x1F507;</button>
+    <button class="lang-btn" onclick="toggleLang()">EN</button>
+  </div>
   <h1 class="home-title">呼吸法</h1>
   <div class="cards" id="cards"></div>
+  <button class="reminder-fab" onclick="showReminder()" id="reminder-fab">&#x1F514;</button>
 </div>
 
 <!-- SESSION -->
@@ -227,7 +236,8 @@ const scaleMap={inhale:1,inhale2:1.15,hold:1,exhale:.35,holdAfter:.35,rest:.4};
 // ===================== STATE =====================
 let zh=localStorage.getItem('lang')!=='en';
 let cur=null,stepIdx=0,cycle=1,timer=null,arcRAF=null,phaseStart=0,phaseDur=0;
-let soundOn=true,audioCtx=null,waterNode=null;
+let soundOn=false,audioCtx=null,waterNode=null;
+let homeSoundOn=false;
 let pomoState=null,pomoTimer=null,pomoRAF=null,pomoPaused=false;
 let pomoFrom='home'; // track where we came from
 let reminders=JSON.parse(localStorage.getItem('reminders')||'[]');
@@ -236,20 +246,11 @@ let reminders=JSON.parse(localStorage.getItem('reminders')||'[]');
 function renderHome(){
   const c=document.getElementById('cards');
   c.innerHTML='';
-  // Pomodoro card
-  const pLabel=zh?'工具':'Tools';
-  c.innerHTML+=`<div class="section-label">${pLabel}</div>`;
-  const pd=document.createElement('div');pd.className='card';pd.onclick=startPomo;
-  pd.innerHTML=`<div class="card-icon" style="color:var(--tomato)">\u{1F345}</div>
-    <div class="card-body">
-      <div class="card-row"><span class="card-name">${zh?'蕃茄呼吸':'Pomo Breathe'}</span><span class="card-time">~2h</span></div>
-      <div class="card-sub" style="color:var(--tomato);opacity:.8">${zh?'專注工作 + 定時呼吸':'Focus + Timed Breathing'}</div>
-      <div class="card-purpose">${zh?'工作 25 分鐘 → 共振呼吸 5 分鐘':'Work 25 min → Coherent breathing 5 min'}</div>
-    </div>`;
-  c.appendChild(pd);
-  // Breathing section
-  const bLabel=zh?'呼吸法':'Breathing';
-  c.innerHTML+=`<div class="section-label" style="margin-top:12px">${bLabel}</div>`;
+  const frag=document.createDocumentFragment();
+  // Breathing section label
+  const bLabel=document.createElement('div');bLabel.className='section-label';bLabel.textContent=zh?'呼吸法':'Breathing';
+  frag.appendChild(bLabel);
+  // Breathing cards
   techniques.forEach(t=>{
     const d=document.createElement('div');d.className='card';d.onclick=()=>startSession(t);
     d.innerHTML=`<div class="card-icon" style="color:${t.color}">${t.icon}</div>
@@ -258,25 +259,38 @@ function renderHome(){
         <div class="card-sub" style="color:${t.color};opacity:.8">${zh?t.subZH:t.subEN}</div>
         <div class="card-purpose">${zh?t.purposeZH:t.purposeEN}</div>
       </div>`;
-    c.appendChild(d);
+    frag.appendChild(d);
   });
-  // Reminder card
-  c.innerHTML+=`<div class="section-label" style="margin-top:12px">${zh?'設定':'Settings'}</div>`;
-  const rd=document.createElement('div');rd.className='card';rd.onclick=showReminder;
-  const rCount=reminders.length;
-  rd.innerHTML=`<div class="card-icon" style="color:var(--text2)">\u{1F514}</div>
+  // Tools section label
+  const tLabel=document.createElement('div');tLabel.className='section-label';tLabel.style.marginTop='12px';tLabel.textContent=zh?'工具':'Tools';
+  frag.appendChild(tLabel);
+  // Pomodoro card
+  const pd=document.createElement('div');pd.className='card';pd.onclick=startPomo;
+  pd.innerHTML=`<div class="card-icon" style="color:var(--tomato)">\u{1F345}</div>
     <div class="card-body">
-      <div class="card-row"><span class="card-name">${zh?'呼吸提醒':'Reminders'}</span><span class="card-time">${rCount>0?(rCount+(zh?' 個已設定':' set')):(zh?'未設定':'None')}</span></div>
-      <div class="card-sub" style="color:var(--text2)">${zh?'設定每日定時提醒':'Set daily breathing reminders'}</div>
+      <div class="card-row"><span class="card-name">${zh?'蕃茄呼吸':'Pomo Breathe'}</span><span class="card-time">~2h</span></div>
+      <div class="card-sub" style="color:var(--tomato);opacity:.8">${zh?'專注工作 + 定時呼吸':'Focus + Timed Breathing'}</div>
+      <div class="card-purpose">${zh?'工作 25 分鐘 → 共振呼吸 5 分鐘':'Work 25 min → Coherent breathing 5 min'}</div>
     </div>`;
-  c.appendChild(rd);
+  frag.appendChild(pd);
+  c.appendChild(frag);
   document.querySelector('.home-title').textContent=zh?'呼吸法':'Breathe';
   document.querySelector('.lang-btn').textContent=zh?'EN':'中';
+  // Update reminder FAB badge
+  const fab=document.getElementById('reminder-fab');
+  if(reminders.length>0) fab.innerHTML=`\u{1F514}<span class="badge">${reminders.length}</span>`;
+  else fab.innerHTML='\u{1F514}';
 }
 function toggleLang(){zh=!zh;localStorage.setItem('lang',zh?'zh':'en');renderHome()}
 
 // ===================== AUDIO =====================
-function initAudio(){if(audioCtx)return;audioCtx=new(window.AudioContext||window.webkitAudioContext)();startWater()}
+function initAudio(){if(audioCtx)return;audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
+function toggleHomeSound(){
+  initAudio();
+  homeSoundOn=!homeSoundOn;
+  document.getElementById('home-sound-btn').innerHTML=homeSoundOn?'\u{1F50A}':'\u{1F507}';
+  if(homeSoundOn){startWater()}else{if(waterNode){waterNode.gain.gain.value=0}}
+}
 function startWater(){
   if(!audioCtx||waterNode)return;
   const node=audioCtx.createScriptProcessor(4096,0,1);
@@ -297,11 +311,18 @@ function playAlertSound(){
   if(!audioCtx)return;const t=audioCtx.currentTime;
   [523.2,659.2,784].forEach((f,i)=>{const o=audioCtx.createOscillator();const g=audioCtx.createGain();o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(0,t+i*.15);g.gain.linearRampToValueAtTime(.08,t+i*.15+.05);g.gain.exponentialRampToValueAtTime(.0001,t+i*.15+.6);o.connect(g);g.connect(audioCtx.destination);o.start(t+i*.15);o.stop(t+i*.15+.6)});
 }
-function toggleSound(){soundOn=!soundOn;document.getElementById('sound-btn').innerHTML=soundOn?'\u{1F50A}':'\u{1F507}';document.getElementById('pomo-sound-btn').innerHTML=soundOn?'\u{1F50A}':'\u{1F507}';if(waterNode)waterNode.gain.gain.value=soundOn?.8:0}
+function toggleSound(){
+  soundOn=!soundOn;
+  document.getElementById('sound-btn').innerHTML=soundOn?'\u{1F50A}':'\u{1F507}';
+  document.getElementById('pomo-sound-btn').innerHTML=soundOn?'\u{1F50A}':'\u{1F507}';
+  if(waterNode)waterNode.gain.gain.value=soundOn?.8:0;
+}
 
 // ===================== BREATHING SESSION =====================
 function startSession(t,from){
-  initAudio();cur=t;stepIdx=0;cycle=1;pomoFrom=from||'home';
+  initAudio();startWater();soundOn=true;
+  document.getElementById('sound-btn').innerHTML='\u{1F50A}';
+  cur=t;stepIdx=0;cycle=1;pomoFrom=from||'home';
   document.getElementById('session').classList.add('active');document.getElementById('home').style.display='none';document.getElementById('pomo').classList.remove('active');
   const circle=document.getElementById('circle'),glow=document.getElementById('glow');
   circle.style.background=`radial-gradient(circle,${t.colorRaw}99,${t.colorRaw}26)`;glow.style.background=t.colorRaw;
@@ -480,7 +501,6 @@ function closeInfo(e){if(e.target.id==='info-modal'||e.target.classList.contains
 
 // ===================== INIT =====================
 renderHome();
-document.addEventListener('click',()=>initAudio(),{once:true});
 if('Notification' in window&&Notification.permission==='default'&&reminders.length>0)Notification.requestPermission();
 </script>
 </body>
