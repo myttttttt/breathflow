@@ -135,7 +135,6 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 <!-- HOME -->
 <div id="home">
   <div class="top-bar">
-    <button class="top-btn" id="home-sound-btn" onclick="toggleHomeSound()">&#x1F507;</button>
     <button class="lang-btn" onclick="toggleLang()">EN</button>
   </div>
   <h1 class="home-title">呼吸法</h1>
@@ -285,12 +284,6 @@ function toggleLang(){zh=!zh;localStorage.setItem('lang',zh?'zh':'en');renderHom
 
 // ===================== AUDIO =====================
 function initAudio(){if(audioCtx)return;audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
-function toggleHomeSound(){
-  initAudio();
-  homeSoundOn=!homeSoundOn;
-  document.getElementById('home-sound-btn').innerHTML=homeSoundOn?'\u{1F50A}':'\u{1F507}';
-  if(homeSoundOn){startWater()}else{if(waterNode){waterNode.gain.gain.value=0}}
-}
 function startWater(){
   if(!audioCtx||waterNode)return;
   const node=audioCtx.createScriptProcessor(4096,0,1);
@@ -320,8 +313,7 @@ function toggleSound(){
 
 // ===================== BREATHING SESSION =====================
 function startSession(t,from){
-  initAudio();startWater();soundOn=true;
-  document.getElementById('sound-btn').innerHTML='\u{1F50A}';
+  initAudio();soundOn=true;
   cur=t;stepIdx=0;cycle=1;pomoFrom=from||'home';
   document.getElementById('session').classList.add('active');document.getElementById('home').style.display='none';document.getElementById('pomo').classList.remove('active');
   const circle=document.getElementById('circle'),glow=document.getElementById('glow');
