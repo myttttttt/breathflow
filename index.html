@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#121219">
+<title>BreathFlow</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#121219;--card:#21212b;
+  --text:rgba(255,255,255,.9);--text2:rgba(255,255,255,.5);
+  --coral:#f28d73;--blue:#6699cc;--indigo:#7366bf;--sage:#8cbf8c;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Rounded','Helvetica Neue',sans-serif;
+}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;-webkit-tap-highlight-color:transparent}
+
+/* HOME */
+#home{display:flex;flex-direction:column;height:100%;padding:env(safe-area-inset-top) 24px 0}
+.top-bar{display:flex;justify-content:flex-end;padding:16px 0 0}
+.lang-btn{width:36px;height:36px;border-radius:50%;background:var(--card);border:none;color:var(--text);font-size:14px;font-weight:500;cursor:pointer}
+.home-title{text-align:center;font-size:34px;font-weight:200;margin:8px 0 20px;letter-spacing:2px}
+.cards{display:flex;flex-direction:column;gap:14px;overflow-y:auto;flex:1;padding-bottom:40px}
+.card{display:flex;align-items:center;gap:16px;padding:16px;background:var(--card);border-radius:16px;cursor:pointer;transition:transform .15s}
+.card:active{transform:scale(.97)}
+.card-icon{width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.card-body{flex:1}
+.card-row{display:flex;justify-content:space-between;align-items:center}
+.card-name{font-size:20px;font-weight:600}
+.card-time{font-size:12px;color:var(--text2)}
+.card-sub{font-size:13px;margin-top:3px}
+.card-purpose{font-size:12px;color:var(--text2);margin-top:2px}
+
+/* SESSION */
+#session{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;z-index:10}
+#session.active{display:flex}
+.sess-top{display:flex;justify-content:space-between;align-items:center;padding:60px 24px 0}
+.sess-btn{background:none;border:none;color:var(--text);font-size:20px;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+.sess-right{display:flex;align-items:center;gap:8px}
+.sess-counter{font-size:14px;font-family:monospace;color:var(--text)}
+.sess-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.phase-label{font-size:30px;font-weight:300;margin-bottom:48px;transition:opacity .3s}
+.breath-area{position:relative;width:340px;height:340px;display:flex;align-items:center;justify-content:center}
+
+/* Breathing circle */
+.breath-circle{width:220px;height:220px;border-radius:50%;position:absolute;transition:transform ease-in-out;will-change:transform}
+.breath-glow{width:260px;height:260px;border-radius:50%;position:absolute;filter:blur(20px);opacity:.08;transition:transform ease-in-out;will-change:transform}
+
+/* Timer arc */
+.timer-arc{position:absolute;width:270px;height:270px}
+.timer-arc circle{fill:none;stroke-width:2;stroke-linecap:round;transition:stroke-dashoffset linear .05s}
+
+/* Hypnotic rings */
+.hypno-ring{position:absolute;border-radius:50%;border-style:dashed;opacity:0;transition:opacity .5s}
+.hypno-ring.visible{opacity:1}
+.ring1{width:330px;height:330px;border-width:1.2px;animation:spin1 50s linear infinite}
+.ring2{width:290px;height:290px;border-width:1px;animation:spin2 38s linear infinite}
+.ring3{width:250px;height:250px;border-width:.8px;animation:spin3 28s linear infinite}
+.ring4{width:216px;height:216px;border-width:.7px;animation:spin4 21s linear infinite}
+.ring5{width:184px;height:184px;border-width:.6px;animation:spin5 15s linear infinite}
+@keyframes spin1{to{transform:rotate(360deg)}}
+@keyframes spin2{to{transform:rotate(-360deg)}}
+@keyframes spin3{to{transform:rotate(360deg)}}
+@keyframes spin4{to{transform:rotate(-360deg)}}
+@keyframes spin5{to{transform:rotate(360deg)}}
+
+.sess-footer{text-align:center;padding-bottom:40px}
+.instruction{font-size:16px;color:var(--text2);margin-bottom:4px;transition:opacity .3s}
+.sleep-hint{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:16px}
+.info-btn{background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;padding:8px}
+
+/* DONE */
+#done{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:11}
+#done.active{display:flex}
+.done-icon{font-size:60px;margin-bottom:16px}
+.done-title{font-size:28px;font-weight:300;margin-bottom:8px}
+.done-sub{font-size:14px;color:var(--text2);margin-bottom:60px}
+.done-btn{background:rgba(255,255,255,.1);border:none;color:var(--text);font-size:20px;font-weight:600;padding:16px 0;width:calc(100% - 80px);border-radius:14px;cursor:pointer}
+
+/* INFO MODAL */
+#info-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:20;align-items:flex-end;justify-content:center}
+#info-modal.active{display:flex}
+.info-sheet{background:var(--bg);border-radius:20px 20px 0 0;width:100%;max-height:70vh;overflow-y:auto;padding:24px 24px env(safe-area-inset-bottom)}
+.info-handle{width:40px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:0 auto 20px}
+.info-header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.info-header span{font-size:28px}
+.info-header h2{font-size:24px;font-weight:300;flex:1}
+.info-close{background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer}
+.info-section{margin-bottom:20px}
+.info-section h3{font-size:15px;font-weight:600;margin-bottom:8px}
+.info-section p{font-size:16px;line-height:1.6;color:rgba(255,255,255,.85)}
+.info-warning{background:rgba(255,200,0,.08);padding:16px;border-radius:12px;margin-bottom:20px}
+.info-warning h3{color:rgba(255,200,0,.8)}
+.info-warning p{color:rgba(255,255,255,.8)}
+.rhythm-tags{display:flex;gap:8px;flex-wrap:wrap}
+.rhythm-tag{background:var(--card);padding:6px 10px;border-radius:8px;font-size:13px;color:rgba(255,255,255,.7)}
+</style>
+</head>
+<body>
+
+<!-- HOME SCREEN -->
+<div id="home">
+  <div class="top-bar"><button class="lang-btn" onclick="toggleLang()">EN</button></div>
+  <h1 class="home-title" data-zh="呼吸法" data-en="Breathe">呼吸法</h1>
+  <div class="cards" id="cards"></div>
+</div>
+
+<!-- SESSION SCREEN -->
+<div id="session">
+  <div class="sess-top">
+    <button class="sess-btn" onclick="exitSession()">&#x2715;</button>
+    <div class="sess-right">
+      <button class="sess-btn" id="sound-btn" onclick="toggleSound()">&#x1F50A;</button>
+      <span class="sess-counter" id="counter"></span>
+    </div>
+  </div>
+  <div class="sess-body">
+    <div class="phase-label" id="phase-label"></div>
+    <div class="breath-area" id="breath-area">
+      <div class="hypno-ring ring1" id="hr1"></div>
+      <div class="hypno-ring ring2" id="hr2"></div>
+      <div class="hypno-ring ring3" id="hr3"></div>
+      <div class="hypno-ring ring4" id="hr4"></div>
+      <div class="hypno-ring ring5" id="hr5"></div>
+      <div class="breath-glow" id="glow"></div>
+      <div class="breath-circle" id="circle"></div>
+      <svg class="timer-arc" viewBox="0 0 270 270">
+        <circle id="arc" cx="135" cy="135" r="133" transform="rotate(-90 135 135)"
+          stroke-dasharray="835.66" stroke-dashoffset="835.66"/>
+      </svg>
+    </div>
+  </div>
+  <div class="sess-footer">
+    <div class="instruction" id="instruction"></div>
+    <div class="sleep-hint" id="sleep-hint" style="display:none"></div>
+    <button class="info-btn" id="info-btn" onclick="showInfo()"></button>
+  </div>
+</div>
+
+<!-- DONE SCREEN -->
+<div id="done">
+  <div class="done-icon">&#x2714;</div>
+  <div class="done-title" id="done-title"></div>
+  <div class="done-sub" id="done-sub"></div>
+  <button class="done-btn" id="done-btn" onclick="closeDone()"></button>
+</div>
+
+<!-- INFO MODAL -->
+<div id="info-modal" onclick="closeInfo(event)">
+  <div class="info-sheet" id="info-sheet"></div>
+</div>
+
+<script>
+// === DATA ===
+const techniques = [
+  {
+    id:'4-7-8', icon:'&#x1F319;',
+    nameEN:'4-7-8 Breathing', nameZH:'4-7-8 呼吸法',
+    subEN:'Deep Sedation', subZH:'深度助眠',
+    purposeEN:'Insomnia, racing thoughts', purposeZH:'失眠、思緒狂奔',
+    time:'~76s', color:'var(--indigo)', colorRaw:'#7366bf',
+    steps:[{p:'inhale',d:4},{p:'hold',d:7},{p:'exhale',d:8}],
+    cycles:4, hypnotic:true,
+    info:{
+      descEN:'Inhale for 4 seconds, hold for 7, exhale for 8. A powerful natural sedative that maximizes parasympathetic activation.',
+      descZH:'吸氣 4 秒、憋氣 7 秒、吐氣 8 秒。一種強效的天然鎮靜劑，透過延長憋氣和極長的吐氣，最大化副交感神經的活躍度。',
+      sciEN:'Developed by Dr. Andrew Weil. The extended hold and exhale shift the autonomic nervous system toward rest-and-digest mode.',
+      sciZH:'由整合醫學先驅 Andrew Weil 醫師提出。延長的憋氣和吐氣能將自律神經系統切換至休息與消化模式，促進入睡。',
+      srcEN:'Dr. Andrew Weil; Jerath et al., Medical Hypotheses, 2006',
+      srcZH:'Andrew Weil 醫師；Jerath 等人，Medical Hypotheses，2006',
+      warnEN:'Beginners may find the 7-second hold challenging. Start with shorter holds (4-4-6). Do not practice while driving.',
+      warnZH:'初學者可能覺得 7 秒憋氣困難，可先從較短的憋氣開始（4-4-6）。請勿在開車時練習。'
+    }
+  },
+  {
+    id:'coherent', icon:'&#x1F30A;',
+    nameEN:'Coherent Breathing', nameZH:'共振呼吸',
+    subEN:'Daily Balance', subZH:'日常平衡',
+    purposeEN:'Ongoing stress, commute', purposeZH:'持續性壓力、通勤放鬆',
+    time:'~5 min', color:'var(--sage)', colorRaw:'#8cbf8c',
+    steps:[{p:'inhale',d:5.5},{p:'exhale',d:5.5}],
+    cycles:27, hypnotic:false,
+    info:{
+      descEN:'Breathe at 5.5 seconds in, 5.5 seconds out \u2014 approximately 5.5 breaths per minute. The simplest technique for daily maintenance.',
+      descZH:'以穩定的節奏呼吸：吸氣 5.5 秒、吐氣 5.5 秒，大約每分鐘 5.5 次呼吸。最簡單的日常神經系統保養法。',
+      sciEN:'This frequency maximizes Heart Rate Variability (HRV), synchronizing heartbeat, blood pressure, and brainwaves into coherent resonance.',
+      sciZH:'這個特定的頻率能讓心率變異度（HRV）達到最大化，讓心跳、血壓與腦波進入「共振」狀態。',
+      srcEN:'Lehrer & Gevirtz, Frontiers in Public Health, 2014',
+      srcZH:'Lehrer & Gevirtz，Frontiers in Public Health，2014',
+      warnEN:null, warnZH:null
+    }
+  },
+  {
+    id:'box', icon:'&#x25A2;',
+    nameEN:'Box Breathing', nameZH:'箱式呼吸',
+    subEN:'Focus & Calm', subZH:'冷靜專注',
+    purposeEN:'High-pressure decisions', purposeZH:'高壓決策、需要專注時',
+    time:'~80s', color:'var(--blue)', colorRaw:'#6699cc',
+    steps:[{p:'inhale',d:4},{p:'hold',d:4},{p:'exhale',d:4},{p:'holdAfter',d:4}],
+    cycles:5, hypnotic:false,
+    info:{
+      descEN:'Equal duration inhale, hold, exhale, and hold \u2014 forming a square. Used by Navy SEALs under extreme pressure.',
+      descZH:'等長的吸氣、憋氣、吐氣、憋氣，形成正方形循環。美國海豹突擊隊在戰鬥前用來控制壓力的技巧。',
+      sciEN:'The rhythmic pattern forces attentional control, reducing cortisol and improving cognitive performance under stress.',
+      sciZH:'規律的節奏迫使注意力集中，降低皮質醇，並提升壓力下的認知表現。',
+      srcEN:'U.S. Navy SEALs training protocol; Ma et al., Science, 2017',
+      srcZH:'美國海豹突擊隊訓練方案；Ma 等人，Science，2017',
+      warnEN:'If dizzy during holds, shorten the hold duration.',
+      warnZH:'如果憋氣時感到頭暈，請縮短憋氣時間。'
+    }
+  },
+  {
+    id:'sigh', icon:'&#x1F4A8;',
+    nameEN:'Physiological Sigh', nameZH:'生理性嘆息',
+    subEN:'Emergency Calm', subZH:'緊急鎮靜',
+    purposeEN:'Panic, anger, stage fright', purposeZH:'恐慌、暴怒、上台前',
+    time:'~30s', color:'var(--coral)', colorRaw:'#f28d73',
+    steps:[{p:'inhale',d:1.5},{p:'inhale2',d:1},{p:'exhale',d:6},{p:'rest',d:1.5}],
+    cycles:3, hypnotic:false,
+    info:{
+      descEN:'A double inhale through the nose followed by a long exhale. The fastest known method to reduce heart rate in real time.',
+      descZH:'透過鼻子連續吸兩口氣，再用嘴巴緩慢長吐氣。目前已知最快降低心率的物理方法。',
+      sciEN:'Studied by Stanford Huberman Lab. The double inhale reinflates collapsed lung alveoli, maximizing CO\u2082 expulsion.',
+      sciZH:'由史丹佛大學 Huberman Lab 研究驗證。雙重吸氣能重新撐開塌陷的肺泡，最大化排出二氧化碳。',
+      srcEN:'Balban et al., Cell Reports Medicine, 2023',
+      srcZH:'Balban 等人，Cell Reports Medicine，2023',
+      warnEN:null, warnZH:null
+    }
+  }
+];
+
+const phaseNames = {
+  inhale:{zh:'吸氣',en:'Inhale'}, inhale2:{zh:'吸氣',en:'Inhale'},
+  hold:{zh:'憋氣',en:'Hold'}, holdAfter:{zh:'憋氣',en:'Hold'},
+  exhale:{zh:'吐氣',en:'Exhale'}, rest:{zh:'休息',en:'Rest'}
+};
+const phaseInstr = {
+  inhale:{zh:'用鼻子慢慢吸氣',en:'Breathe in through your nose'},
+  inhale2:{zh:'再吸一小口氣',en:'One more sip of air'},
+  hold:{zh:'輕輕屏住呼吸',en:'Hold gently'}, holdAfter:{zh:'輕輕屏住呼吸',en:'Hold gently'},
+  exhale:{zh:'緩慢地吐氣',en:'Slowly release'},
+  rest:{zh:'自然停頓',en:'Natural pause'}
+};
+const scaleMap = {inhale:1,inhale2:1.15,hold:1,exhale:.35,holdAfter:.35,rest:.4};
+
+// === STATE ===
+let zh = localStorage.getItem('lang')!=='en';
+let cur = null, stepIdx=0, cycle=1, timer=null, arcRAF=null, phaseStart=0, phaseDur=0;
+let soundOn=true, audioCtx=null, waterNode=null;
+
+// === RENDER HOME ===
+function renderHome(){
+  const c=document.getElementById('cards');
+  c.innerHTML='';
+  techniques.forEach(t=>{
+    const d=document.createElement('div');
+    d.className='card';
+    d.onclick=()=>startSession(t);
+    d.innerHTML=`<div class="card-icon" style="color:${t.color}">${t.icon}</div>
+      <div class="card-body">
+        <div class="card-row"><span class="card-name" style="color:var(--text)">${zh?t.nameZH:t.nameEN}</span><span class="card-time">${t.time}</span></div>
+        <div class="card-sub" style="color:${t.color};opacity:.8">${zh?t.subZH:t.subEN}</div>
+        <div class="card-purpose">${zh?t.purposeZH:t.purposeEN}</div>
+      </div>`;
+    c.appendChild(d);
+  });
+  document.querySelector('.home-title').textContent=zh?'呼吸法':'Breathe';
+  document.querySelector('.lang-btn').textContent=zh?'EN':'中';
+}
+
+function toggleLang(){zh=!zh;localStorage.setItem('lang',zh?'zh':'en');renderHome()}
+
+// === AUDIO ===
+function initAudio(){
+  if(audioCtx) return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  startWater();
+}
+function startWater(){
+  if(!audioCtx||waterNode) return;
+  const bufSize=audioCtx.sampleRate*4;
+  const node=audioCtx.createScriptProcessor(4096,0,1);
+  let lp1=0,lp2=0;
+  node.onaudioprocess=e=>{
+    const out=e.outputBuffer.getChannelData(0);
+    for(let i=0;i<out.length;i++){
+      const n=Math.random()*2-1;
+      lp1+=.06*(n-lp1); lp2+=.06*(lp1-lp2);
+      const t=(audioCtx.currentTime+i/audioCtx.sampleRate);
+      const f1=(1+Math.sin(2*Math.PI*.12*t))*.5;
+      const f2=(1+Math.sin(2*Math.PI*.07*t+2.1))*.5;
+      out[i]=lp2*.12*(.6+.4*f1*f2);
+    }
+  };
+  const gain=audioCtx.createGain();
+  gain.gain.value=.8;
+  node.connect(gain);
+  gain.connect(audioCtx.destination);
+  waterNode={node,gain};
+}
+function stopWater(){
+  if(waterNode){waterNode.node.disconnect();waterNode.gain.disconnect();waterNode=null}
+}
+function playPhaseSound(phase){
+  if(!soundOn||!audioCtx) return;
+  const freqs={inhale:[261.6,392,523.2],inhale2:[329.6,392],hold:[196,293.6],holdAfter:[196,293.6],exhale:[130.8,196,329.6],rest:[]};
+  const vols={inhale:.07,inhale2:.05,hold:.025,holdAfter:.025,exhale:.06,rest:0};
+  const durs={inhale:1.2,inhale2:.6,hold:1.2,holdAfter:1.2,exhale:1.2,rest:0};
+  const f=freqs[phase]||[];if(!f.length)return;
+  const dur=durs[phase],vol=vols[phase],t=audioCtx.currentTime;
+  f.forEach((freq,idx)=>{
+    const osc=audioCtx.createOscillator();
+    const g=audioCtx.createGain();
+    osc.frequency.value=freq*(1+idx*.001);
+    osc.type='sine';
+    const amp=vol*(idx===0?1:idx===1?.6:.3);
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(amp,t+.03);
+    g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    osc.connect(g);g.connect(audioCtx.destination);
+    osc.start(t);osc.stop(t+dur);
+  });
+}
+
+function toggleSound(){
+  soundOn=!soundOn;
+  document.getElementById('sound-btn').innerHTML=soundOn?'&#x1F50A;':'&#x1F507;';
+  if(waterNode) waterNode.gain.gain.value=soundOn?.8:0;
+}
+
+// === SESSION ===
+function startSession(t){
+  initAudio();
+  cur=t; stepIdx=0; cycle=1;
+  const s=document.getElementById('session');
+  s.classList.add('active');
+  document.getElementById('home').style.display='none';
+  // set colors
+  const circle=document.getElementById('circle');
+  const glow=document.getElementById('glow');
+  circle.style.background=`radial-gradient(circle,${t.colorRaw}99,${t.colorRaw}26)`;
+  glow.style.background=t.colorRaw;
+  document.getElementById('arc').style.stroke=t.colorRaw+'59';
+  // hypnotic rings
+  const rings=document.querySelectorAll('.hypno-ring');
+  rings.forEach(r=>{r.style.borderColor=t.colorRaw;r.classList.toggle('visible',t.hypnotic)});
+  // sleep hint
+  const hint=document.getElementById('sleep-hint');
+  if(t.id==='4-7-8'){hint.style.display='block';hint.textContent=zh?'看著圖像變化會更容易有睡意':'Watching the visual changes helps you feel sleepy'}
+  else hint.style.display='none';
+  document.getElementById('info-btn').textContent=zh?'(i) 了解更多':'(i) Learn More';
+  runStep();
+}
+
+function runStep(){
+  if(!cur)return;
+  const step=cur.steps[stepIdx];
+  const p=step.p, d=step.d;
+  phaseDur=d; phaseStart=performance.now();
+  // update UI
+  const l=zh?'zh':'en';
+  document.getElementById('phase-label').textContent=phaseNames[p][l];
+  document.getElementById('instruction').textContent=phaseInstr[p][l];
+  document.getElementById('counter').textContent=`${cycle} / ${cur.cycles}`;
+  // animate circle
+  const sc=scaleMap[p];
+  const circle=document.getElementById('circle');
+  const glow=document.getElementById('glow');
+  const ease=p==='inhale'||p==='inhale2'?'ease-in':p==='exhale'?'ease-out':'ease-in-out';
+  const dur=p==='hold'||p==='holdAfter'?.3:d;
+  circle.style.transition=`transform ${dur}s ${ease}`;
+  glow.style.transition=`transform ${dur}s ${ease}`;
+  circle.style.transform=`scale(${sc})`;
+  glow.style.transform=`scale(${sc})`;
+  // sound + vibrate
+  playPhaseSound(p);
+  if(navigator.vibrate) navigator.vibrate(p==='exhale'?40:p==='hold'||p==='holdAfter'?15:25);
+  // timer arc
+  startArc();
+  // next step
+  clearTimeout(timer);
+  timer=setTimeout(()=>{
+    stepIdx++;
+    if(stepIdx>=cur.steps.length){stepIdx=0;cycle++;if(cycle>cur.cycles){finishSession();return}}
+    runStep();
+  },d*1000);
+}
+
+function startArc(){
+  const arc=document.getElementById('arc');
+  const total=835.66;
+  function tick(){
+    const elapsed=(performance.now()-phaseStart)/1000;
+    const prog=Math.min(elapsed/phaseDur,1);
+    arc.style.strokeDashoffset=total*(1-prog);
+    if(prog<1) arcRAF=requestAnimationFrame(tick);
+  }
+  cancelAnimationFrame(arcRAF);
+  tick();
+}
+
+function finishSession(){
+  clearTimeout(timer);cancelAnimationFrame(arcRAF);
+  document.getElementById('session').classList.remove('active');
+  const d=document.getElementById('done');
+  d.classList.add('active');
+  d.style.color=cur.colorRaw;
+  document.getElementById('done-title').textContent=zh?'完成了':'Well Done';
+  document.getElementById('done-sub').textContent=zh?cur.nameZH:cur.nameEN;
+  const btn=document.getElementById('done-btn');
+  btn.textContent=zh?'結束':'Done';
+  btn.style.background=cur.colorRaw+'33';
+}
+
+function closeDone(){
+  document.getElementById('done').classList.remove('active');
+  document.getElementById('home').style.display='flex';
+  cur=null;
+}
+
+function exitSession(){
+  clearTimeout(timer);cancelAnimationFrame(arcRAF);
+  document.getElementById('session').classList.remove('active');
+  document.getElementById('home').style.display='flex';
+  cur=null;
+}
+
+// === INFO ===
+function showInfo(){
+  if(!cur)return;
+  const i=cur.info, l=zh;
+  let html=`<div class="info-handle"></div>
+    <div class="info-header"><span style="font-size:28px;color:${cur.colorRaw}">${cur.icon}</span>
+    <h2>${l?cur.nameZH:cur.nameEN}</h2>
+    <button class="info-close" onclick="closeInfo(event)">&#x2715;</button></div>
+    <div class="info-section"><h3 style="color:${cur.colorRaw}">${l?'簡介':'About'}</h3><p>${l?i.descZH:i.descEN}</p></div>
+    <div class="info-section"><h3 style="color:${cur.colorRaw}">${l?'科學驗證':'Science'}</h3><p>${l?i.sciZH:i.sciEN}</p></div>
+    <div class="info-section"><h3 style="color:${cur.colorRaw}">${l?'研究來源':'Source'}</h3><p>${l?i.srcZH:i.srcEN}</p></div>`;
+  const w=l?i.warnZH:i.warnEN;
+  if(w) html+=`<div class="info-warning"><h3>&#x26A0; ${l?'注意事項':'Caution'}</h3><p>${w}</p></div>`;
+  html+=`<div class="info-section"><h3 style="color:${cur.colorRaw}">${l?'節奏':'Rhythm'}</h3><div class="rhythm-tags">`;
+  cur.steps.forEach(s=>{html+=`<span class="rhythm-tag">${phaseNames[s.p][l?'zh':'en']} ${s.d}s</span>`});
+  html+=`</div></div>`;
+  document.getElementById('info-sheet').innerHTML=html;
+  document.getElementById('info-modal').classList.add('active');
+}
+function closeInfo(e){if(e.target.id==='info-modal'||e.target.classList.contains('info-close'))document.getElementById('info-modal').classList.remove('active')}
+
+// === INIT ===
+renderHome();
+// Start water sound on first interaction
+document.addEventListener('click',()=>initAudio(),{once:true});
+</script>
+</body>
+</html>
