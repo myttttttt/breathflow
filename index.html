@@ -13,6 +13,7 @@
   --bg:#121219;--card:#21212b;
   --text:rgba(255,255,255,.9);--text2:rgba(255,255,255,.5);
   --coral:#f28d73;--blue:#6699cc;--indigo:#7366bf;--sage:#8cbf8c;--tomato:#e8634a;
+  --teal:#5cad9e;
   --font:-apple-system,BlinkMacSystemFont,'SF Pro Rounded','Helvetica Neue',sans-serif;
 }
 html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;-webkit-tap-highlight-color:transparent}
@@ -69,6 +70,10 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .instruction{font-size:16px;color:var(--text2);margin-bottom:4px;transition:opacity .3s}
 .sleep-hint{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:16px}
 .info-btn{background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;padding:8px}
+
+/* Sound picker button */
+.sound-pick-btn{background:var(--card);border:none;color:var(--text);font-size:13px;cursor:pointer;height:36px;border-radius:18px;padding:0 12px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.sound-pick-btn .sp-icon{font-size:16px}
 
 /* DONE */
 #done{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:11}
@@ -128,6 +133,37 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .pomo-label{font-size:14px;color:var(--text2)}
 .pomo-footer{text-align:center;padding-bottom:40px}
 .pomo-pause{background:none;border:1px solid rgba(255,255,255,.2);color:var(--text);padding:10px 32px;border-radius:10px;font-size:15px;cursor:pointer}
+
+/* CUSTOM BREATHE MODAL */
+#custom-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:20;align-items:center;justify-content:center}
+#custom-modal.active{display:flex}
+.custom-sheet{background:var(--bg);border-radius:20px;width:calc(100% - 48px);max-width:380px;padding:24px;max-height:90vh;overflow-y:auto}
+.custom-title{font-size:20px;font-weight:600;margin-bottom:20px;text-align:center}
+.custom-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.custom-row-label{font-size:14px;color:var(--text)}
+.custom-row-control{display:flex;align-items:center;gap:10px}
+.custom-adj{width:32px;height:32px;border-radius:50%;background:var(--card);border:none;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.custom-adj:active{transform:scale(.9)}
+.custom-val{font-size:18px;font-weight:600;min-width:32px;text-align:center;font-family:monospace}
+.custom-preview{margin:20px 0 16px;text-align:center}
+.custom-preview-bar{display:flex;height:24px;border-radius:12px;overflow:hidden;margin-bottom:6px}
+.custom-preview-seg{display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,.8);font-weight:500}
+.custom-preview-total{font-size:12px;color:var(--text2)}
+.custom-start{width:100%;padding:14px;background:var(--teal);border:none;border-radius:12px;color:#000;font-size:16px;font-weight:600;cursor:pointer;margin-top:4px}
+.custom-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer}
+
+/* SOUND PICKER BOTTOM SHEET */
+#sound-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:25;align-items:flex-end;justify-content:center}
+#sound-modal.active{display:flex}
+.sound-sheet{background:var(--bg);border-radius:20px 20px 0 0;width:100%;padding:20px 24px env(safe-area-inset-bottom);max-height:50vh}
+.sound-sheet .info-handle{width:40px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:0 auto 16px}
+.sound-sheet-title{font-size:16px;font-weight:600;margin-bottom:16px;text-align:center}
+.sound-option{display:flex;align-items:center;gap:14px;padding:14px;background:var(--card);border-radius:12px;cursor:pointer;margin-bottom:8px;border:2px solid transparent;transition:border-color .2s}
+.sound-option.selected{border-color:var(--teal)}
+.sound-option-icon{font-size:22px;width:36px;text-align:center}
+.sound-option-name{font-size:15px;font-weight:500;flex:1}
+.sound-option-check{font-size:18px;color:var(--teal);opacity:0;transition:opacity .2s}
+.sound-option.selected .sound-option-check{opacity:1}
 </style>
 </head>
 <body>
@@ -137,7 +173,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
   <div class="top-bar">
     <button class="lang-btn" onclick="toggleLang()">EN</button>
   </div>
-  <h1 class="home-title">呼吸法</h1>
+  <h1 class="home-title">&#x547C;&#x5438;&#x6CD5;</h1>
   <div class="cards" id="cards"></div>
   <button class="reminder-fab" onclick="showReminder()" id="reminder-fab">&#x1F514;</button>
 </div>
@@ -147,7 +183,10 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
   <div class="sess-top">
     <button class="sess-btn" onclick="exitSession()">&#x2715;</button>
     <div class="sess-right">
-      <button class="sess-btn" id="sound-btn" onclick="toggleSound()">&#x1F50A;</button>
+      <button class="sound-pick-btn" id="sound-pick-btn" onclick="showSoundPicker()">
+        <span class="sp-icon">&#x1F507;</span>
+        <span class="sp-label"></span>
+      </button>
       <span class="sess-counter" id="counter"></span>
     </div>
   </div>
@@ -178,7 +217,10 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
   <div class="pomo-top">
     <button class="sess-btn" onclick="exitPomo()">&#x2715;</button>
     <div class="sess-right">
-      <button class="sess-btn" id="pomo-sound-btn" onclick="toggleSound()">&#x1F50A;</button>
+      <button class="sound-pick-btn" id="pomo-sound-pick-btn" onclick="showSoundPicker()">
+        <span class="sp-icon">&#x1F507;</span>
+        <span class="sp-label"></span>
+      </button>
     </div>
   </div>
   <div class="pomo-body">
@@ -216,284 +258,809 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
   <div class="reminder-sheet" id="reminder-sheet"></div>
 </div>
 
+<!-- CUSTOM BREATHE MODAL -->
+<div id="custom-modal" onclick="closeCustom(event)">
+  <div class="custom-sheet" id="custom-sheet"></div>
+</div>
+
+<!-- SOUND PICKER BOTTOM SHEET -->
+<div id="sound-modal" onclick="closeSoundPicker(event)">
+  <div class="sound-sheet" id="sound-sheet"></div>
+</div>
+
 <script>
 // ===================== DATA =====================
-const techniques = [
-  {id:'4-7-8',icon:'\u{1F319}',nameEN:'4-7-8 Breathing',nameZH:'4-7-8 呼吸法',subEN:'Deep Sedation',subZH:'深度助眠',purposeEN:'Insomnia, racing thoughts',purposeZH:'失眠、思緒狂奔',time:'~76s',color:'var(--indigo)',colorRaw:'#7366bf',steps:[{p:'inhale',d:4},{p:'hold',d:7},{p:'exhale',d:8}],cycles:4,hypnotic:true,
-    info:{descEN:'Inhale 4s, hold 7s, exhale 8s. A powerful natural sedative.',descZH:'吸氣 4 秒、憋氣 7 秒、吐氣 8 秒。強效天然鎮靜劑。',sciEN:'Developed by Dr. Andrew Weil. Shifts autonomic nervous system toward rest-and-digest.',sciZH:'由 Andrew Weil 醫師提出。將自律神經切換至休息模式。',srcEN:'Dr. Andrew Weil; Jerath et al., 2006',srcZH:'Andrew Weil 醫師；Jerath 等人，2006',warnEN:'Start with shorter holds (4-4-6) if 7s is hard. Do not drive.',warnZH:'初學者可從 4-4-6 開始。請勿開車時練習。'}},
-  {id:'coherent',icon:'\u{1F30A}',nameEN:'Coherent Breathing',nameZH:'共振呼吸',subEN:'Daily Balance',subZH:'日常平衡',purposeEN:'Ongoing stress, commute',purposeZH:'持續性壓力、通勤放鬆',time:'~5 min',color:'var(--sage)',colorRaw:'#8cbf8c',steps:[{p:'inhale',d:5.5},{p:'exhale',d:5.5}],cycles:27,hypnotic:false,
-    info:{descEN:'5.5s in, 5.5s out. ~5.5 breaths/min. Simplest daily maintenance.',descZH:'吸 5.5 秒、吐 5.5 秒。最簡單的日常保養法。',sciEN:'Maximizes HRV, synchronizes heart, BP, and brainwaves.',sciZH:'最大化心率變異度，讓心跳、血壓、腦波共振。',srcEN:'Lehrer & Gevirtz, 2014',srcZH:'Lehrer & Gevirtz，2014',warnEN:null,warnZH:null}},
-  {id:'box',icon:'\u{25A2}',nameEN:'Box Breathing',nameZH:'箱式呼吸',subEN:'Focus & Calm',subZH:'冷靜專注',purposeEN:'High-pressure decisions',purposeZH:'高壓決策、需要專注時',time:'~80s',color:'var(--blue)',colorRaw:'#6699cc',steps:[{p:'inhale',d:4},{p:'hold',d:4},{p:'exhale',d:4},{p:'holdAfter',d:4}],cycles:5,hypnotic:false,
-    info:{descEN:'4-4-4-4 square pattern. Used by Navy SEALs.',descZH:'4-4-4-4 正方形循環。海豹突擊隊訓練法。',sciEN:'Forces attentional control, reduces cortisol.',sciZH:'迫使注意力集中，降低皮質醇。',srcEN:'Navy SEALs; Ma et al., 2017',srcZH:'海豹突擊隊；Ma 等人，2017',warnEN:'Shorten holds if dizzy.',warnZH:'頭暈請縮短憋氣。'}},
-  {id:'sigh',icon:'\u{1F4A8}',nameEN:'Physiological Sigh',nameZH:'生理性嘆息',subEN:'Emergency Calm',subZH:'緊急鎮靜',purposeEN:'Panic, anger, stage fright',purposeZH:'恐慌、暴怒、上台前',time:'~30s',color:'var(--coral)',colorRaw:'#f28d73',steps:[{p:'inhale',d:1.5},{p:'inhale2',d:1},{p:'exhale',d:6},{p:'rest',d:1.5}],cycles:3,hypnotic:false,
-    info:{descEN:'Double inhale + long exhale. Fastest way to lower heart rate.',descZH:'雙重吸氣 + 長吐氣。最快降低心率的方法。',sciEN:'Stanford Huberman Lab. Reinflates lung alveoli.',sciZH:'史丹佛 Huberman Lab。重新撐開肺泡。',srcEN:'Balban et al., 2023',srcZH:'Balban 等人，2023',warnEN:null,warnZH:null}}
+var techniques = [
+  {id:'4-7-8',icon:'\u{1F319}',nameEN:'4-7-8 Breathing',nameZH:'4-7-8 \u547C\u5438\u6CD5',subEN:'Deep Sedation',subZH:'\u6DF1\u5EA6\u52A9\u7720',purposeEN:'Insomnia, racing thoughts',purposeZH:'\u5931\u7720\u3001\u601D\u7DD2\u72C2\u5954',time:'~76s',color:'var(--indigo)',colorRaw:'#7366bf',steps:[{p:'inhale',d:4},{p:'hold',d:7},{p:'exhale',d:8}],cycles:4,hypnotic:true,
+    info:{descEN:'Inhale 4s, hold 7s, exhale 8s. A powerful natural sedative.',descZH:'\u5438\u6C23 4 \u79D2\u3001\u618B\u6C23 7 \u79D2\u3001\u5410\u6C23 8 \u79D2\u3002\u5F37\u6548\u5929\u7136\u93AE\u975C\u5291\u3002',sciEN:'Developed by Dr. Andrew Weil. Shifts autonomic nervous system toward rest-and-digest.',sciZH:'\u7531 Andrew Weil \u91AB\u5E2B\u63D0\u51FA\u3002\u5C07\u81EA\u5F8B\u795E\u7D93\u5207\u63DB\u81F3\u4F11\u606F\u6A21\u5F0F\u3002',srcEN:'Dr. Andrew Weil; Jerath et al., 2006',srcZH:'Andrew Weil \u91AB\u5E2B\uFF1BJerath \u7B49\u4EBA\uFF0C2006',warnEN:'Start with shorter holds (4-4-6) if 7s is hard. Do not drive.',warnZH:'\u521D\u5B78\u8005\u53EF\u5F9E 4-4-6 \u958B\u59CB\u3002\u8ACB\u52FF\u958B\u8ECA\u6642\u7DF4\u7FD2\u3002'}},
+  {id:'coherent',icon:'\u{1F30A}',nameEN:'Coherent Breathing',nameZH:'\u5171\u632F\u547C\u5438',subEN:'Daily Balance',subZH:'\u65E5\u5E38\u5E73\u8861',purposeEN:'Ongoing stress, commute',purposeZH:'\u6301\u7E8C\u6027\u58D3\u529B\u3001\u901A\u52E4\u653E\u9B06',time:'~5 min',color:'var(--sage)',colorRaw:'#8cbf8c',steps:[{p:'inhale',d:5.5},{p:'exhale',d:5.5}],cycles:27,hypnotic:false,
+    info:{descEN:'5.5s in, 5.5s out. ~5.5 breaths/min. Simplest daily maintenance.',descZH:'\u5438 5.5 \u79D2\u3001\u5410 5.5 \u79D2\u3002\u6700\u7C21\u55AE\u7684\u65E5\u5E38\u4FDD\u990A\u6CD5\u3002',sciEN:'Maximizes HRV, synchronizes heart, BP, and brainwaves.',sciZH:'\u6700\u5927\u5316\u5FC3\u7387\u8B8A\u7570\u5EA6\uFF0C\u8B93\u5FC3\u8DF3\u3001\u8840\u58D3\u3001\u8166\u6CE2\u5171\u632F\u3002',srcEN:'Lehrer & Gevirtz, 2014',srcZH:'Lehrer & Gevirtz\uFF0C2014',warnEN:null,warnZH:null}},
+  {id:'box',icon:'\u{25A2}',nameEN:'Box Breathing',nameZH:'\u7BB1\u5F0F\u547C\u5438',subEN:'Focus & Calm',subZH:'\u51B7\u975C\u5C08\u6CE8',purposeEN:'High-pressure decisions',purposeZH:'\u9AD8\u58D3\u6C7A\u7B56\u3001\u9700\u8981\u5C08\u6CE8\u6642',time:'~80s',color:'var(--blue)',colorRaw:'#6699cc',steps:[{p:'inhale',d:4},{p:'hold',d:4},{p:'exhale',d:4},{p:'holdAfter',d:4}],cycles:5,hypnotic:false,
+    info:{descEN:'4-4-4-4 square pattern. Used by Navy SEALs.',descZH:'4-4-4-4 \u6B63\u65B9\u5F62\u5FAA\u74B0\u3002\u6D77\u8C79\u7A81\u64CA\u968A\u8A13\u7DF4\u6CD5\u3002',sciEN:'Forces attentional control, reduces cortisol.',sciZH:'\u8FEB\u4F7F\u6CE8\u610F\u529B\u96C6\u4E2D\uFF0C\u964D\u4F4E\u76AE\u8CEA\u9187\u3002',srcEN:'Navy SEALs; Ma et al., 2017',srcZH:'\u6D77\u8C79\u7A81\u64CA\u968A\uFF1BMa \u7B49\u4EBA\uFF0C2017',warnEN:'Shorten holds if dizzy.',warnZH:'\u982D\u6688\u8ACB\u7E2E\u77ED\u618B\u6C23\u3002'}},
+  {id:'sigh',icon:'\u{1F4A8}',nameEN:'Physiological Sigh',nameZH:'\u751F\u7406\u6027\u5606\u606F',subEN:'Emergency Calm',subZH:'\u7DCA\u6025\u93AE\u975C',purposeEN:'Panic, anger, stage fright',purposeZH:'\u6050\u614C\u3001\u66B4\u6012\u3001\u4E0A\u53F0\u524D',time:'~30s',color:'var(--coral)',colorRaw:'#f28d73',steps:[{p:'inhale',d:1.5},{p:'inhale2',d:1},{p:'exhale',d:6},{p:'rest',d:1.5}],cycles:3,hypnotic:false,
+    info:{descEN:'Double inhale + long exhale. Fastest way to lower heart rate.',descZH:'\u96D9\u91CD\u5438\u6C23 + \u9577\u5410\u6C23\u3002\u6700\u5FEB\u964D\u4F4E\u5FC3\u7387\u7684\u65B9\u6CD5\u3002',sciEN:'Stanford Huberman Lab. Reinflates lung alveoli.',sciZH:'\u53F2\u4E39\u4F5B Huberman Lab\u3002\u91CD\u65B0\u6490\u958B\u80BA\u6CE1\u3002',srcEN:'Balban et al., 2023',srcZH:'Balban \u7B49\u4EBA\uFF0C2023',warnEN:null,warnZH:null}}
 ];
-const phaseNames={inhale:{zh:'吸氣',en:'Inhale'},inhale2:{zh:'吸氣',en:'Inhale'},hold:{zh:'憋氣',en:'Hold'},holdAfter:{zh:'憋氣',en:'Hold'},exhale:{zh:'吐氣',en:'Exhale'},rest:{zh:'休息',en:'Rest'}};
-const phaseInstr={inhale:{zh:'用鼻子慢慢吸氣',en:'Breathe in through your nose'},inhale2:{zh:'再吸一小口氣',en:'One more sip of air'},hold:{zh:'輕輕屏住呼吸',en:'Hold gently'},holdAfter:{zh:'輕輕屏住呼吸',en:'Hold gently'},exhale:{zh:'緩慢地吐氣',en:'Slowly release'},rest:{zh:'自然停頓',en:'Natural pause'}};
-const scaleMap={inhale:1,inhale2:1.15,hold:1,exhale:.35,holdAfter:.35,rest:.4};
+var phaseNames={inhale:{zh:'\u5438\u6C23',en:'Inhale'},inhale2:{zh:'\u5438\u6C23',en:'Inhale'},hold:{zh:'\u618B\u6C23',en:'Hold'},holdAfter:{zh:'\u618B\u6C23',en:'Hold'},exhale:{zh:'\u5410\u6C23',en:'Exhale'},rest:{zh:'\u4F11\u606F',en:'Rest'}};
+var phaseInstr={inhale:{zh:'\u7528\u9F3B\u5B50\u6162\u6162\u5438\u6C23',en:'Breathe in through your nose'},inhale2:{zh:'\u518D\u5438\u4E00\u5C0F\u53E3\u6C23',en:'One more sip of air'},hold:{zh:'\u8F15\u8F15\u5C4F\u4F4F\u547C\u5438',en:'Hold gently'},holdAfter:{zh:'\u8F15\u8F15\u5C4F\u4F4F\u547C\u5438',en:'Hold gently'},exhale:{zh:'\u7DE9\u6162\u5730\u5410\u6C23',en:'Slowly release'},rest:{zh:'\u81EA\u7136\u505C\u9813',en:'Natural pause'}};
+var scaleMap={inhale:1,inhale2:1.15,hold:1,exhale:.35,holdAfter:.35,rest:.4};
+
+// ===================== SOUND OPTIONS =====================
+var soundOptions = [
+  {id:'silent',iconChar:'\u{1F507}',nameZH:'\u7121\u8072',nameEN:'Silent'},
+  {id:'rain',iconChar:'\u{1F327}',nameZH:'\u96E8\u8072',nameEN:'Rain'},
+  {id:'ocean',iconChar:'\u{1F30A}',nameZH:'\u6D77\u6D6A',nameEN:'Ocean Waves'},
+  {id:'stream',iconChar:'\u{1F3DE}',nameZH:'\u6EAA\u6D41',nameEN:'Stream'},
+  {id:'whitenoise',iconChar:'\u{1F4AC}',nameZH:'\u767D\u566A\u97F3',nameEN:'White Noise'}
+];
 
 // ===================== STATE =====================
-let zh=localStorage.getItem('lang')!=='en';
-let cur=null,stepIdx=0,cycle=1,timer=null,arcRAF=null,phaseStart=0,phaseDur=0;
-let soundOn=false,audioCtx=null,waterNode=null;
-let homeSoundOn=false;
-let pomoState=null,pomoTimer=null,pomoRAF=null,pomoPaused=false;
-let pomoFrom='home'; // track where we came from
-let reminders=JSON.parse(localStorage.getItem('reminders')||'[]');
+var zh = localStorage.getItem('lang') !== 'en';
+var cur = null, stepIdx = 0, cycle = 1, timer = null, arcRAF = null, phaseStart = 0, phaseDur = 0;
+var soundOn = false, audioCtx = null;
+var selectedSound = localStorage.getItem('bgSound') || 'silent';
+var bgSoundNodes = null;
+var pomoState = null, pomoTimer = null, pomoRAF = null, pomoPaused = false;
+var pomoFrom = 'home';
+var reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+
+// Custom breathing defaults
+var customDefaults = {inhale:4,hold:0,exhale:4,holdAfter:0,cycles:4};
+var customSettings = JSON.parse(localStorage.getItem('customBreath') || 'null') || Object.assign({}, customDefaults);
 
 // ===================== RENDER HOME =====================
-function renderHome(){
-  const c=document.getElementById('cards');
-  c.innerHTML='';
-  const frag=document.createDocumentFragment();
+function renderHome() {
+  var c = document.getElementById('cards');
+  c.innerHTML = '';
+  var frag = document.createDocumentFragment();
   // Breathing section label
-  const bLabel=document.createElement('div');bLabel.className='section-label';bLabel.textContent=zh?'呼吸法':'Breathing';
+  var bLabel = document.createElement('div');
+  bLabel.className = 'section-label';
+  bLabel.textContent = zh ? '\u547C\u5438\u6CD5' : 'Breathing';
   frag.appendChild(bLabel);
   // Breathing cards
-  techniques.forEach(t=>{
-    const d=document.createElement('div');d.className='card';d.onclick=()=>startSession(t);
-    d.innerHTML=`<div class="card-icon" style="color:${t.color}">${t.icon}</div>
-      <div class="card-body">
-        <div class="card-row"><span class="card-name">${zh?t.nameZH:t.nameEN}</span><span class="card-time">${t.time}</span></div>
-        <div class="card-sub" style="color:${t.color};opacity:.8">${zh?t.subZH:t.subEN}</div>
-        <div class="card-purpose">${zh?t.purposeZH:t.purposeEN}</div>
-      </div>`;
+  techniques.forEach(function(t) {
+    var d = document.createElement('div');
+    d.className = 'card';
+    d.onclick = function() { startSession(t); };
+    d.innerHTML = '<div class="card-icon" style="color:' + t.color + '">' + t.icon + '</div>' +
+      '<div class="card-body">' +
+        '<div class="card-row"><span class="card-name">' + (zh ? t.nameZH : t.nameEN) + '</span><span class="card-time">' + t.time + '</span></div>' +
+        '<div class="card-sub" style="color:' + t.color + ';opacity:.8">' + (zh ? t.subZH : t.subEN) + '</div>' +
+        '<div class="card-purpose">' + (zh ? t.purposeZH : t.purposeEN) + '</div>' +
+      '</div>';
     frag.appendChild(d);
   });
+  // Custom breathe card
+  var customCard = document.createElement('div');
+  customCard.className = 'card';
+  customCard.onclick = function() { showCustomModal(); };
+  var customTime = calcCustomTime();
+  customCard.innerHTML = '<div class="card-icon" style="color:var(--teal)">\u{2699}\uFE0F</div>' +
+    '<div class="card-body">' +
+      '<div class="card-row"><span class="card-name">' + (zh ? '\u81EA\u8A02\u547C\u5438' : 'Custom Breathe') + '</span><span class="card-time">~' + customTime + 's</span></div>' +
+      '<div class="card-sub" style="color:var(--teal);opacity:.8">' + (zh ? '\u81EA\u7531\u8A2D\u5B9A\u7BC0\u594F' : 'Set Your Rhythm') + '</div>' +
+      '<div class="card-purpose">' + (zh ? '\u81EA\u8A02\u5438\u6C23\u3001\u618B\u6C23\u3001\u5410\u6C23\u6642\u9593' : 'Custom inhale, hold, exhale durations') + '</div>' +
+    '</div>';
+  frag.appendChild(customCard);
+
   // Tools section label
-  const tLabel=document.createElement('div');tLabel.className='section-label';tLabel.style.marginTop='12px';tLabel.textContent=zh?'工具':'Tools';
+  var tLabel = document.createElement('div');
+  tLabel.className = 'section-label';
+  tLabel.style.marginTop = '12px';
+  tLabel.textContent = zh ? '\u5DE5\u5177' : 'Tools';
   frag.appendChild(tLabel);
   // Pomodoro card
-  const pd=document.createElement('div');pd.className='card';pd.onclick=startPomo;
-  pd.innerHTML=`<div class="card-icon" style="color:var(--tomato)">\u{1F345}</div>
-    <div class="card-body">
-      <div class="card-row"><span class="card-name">${zh?'蕃茄呼吸':'Pomo Breathe'}</span><span class="card-time">~2h</span></div>
-      <div class="card-sub" style="color:var(--tomato);opacity:.8">${zh?'專注工作 + 定時呼吸':'Focus + Timed Breathing'}</div>
-      <div class="card-purpose">${zh?'工作 25 分鐘 → 共振呼吸 5 分鐘':'Work 25 min → Coherent breathing 5 min'}</div>
-    </div>`;
+  var pd = document.createElement('div');
+  pd.className = 'card';
+  pd.onclick = startPomo;
+  pd.innerHTML = '<div class="card-icon" style="color:var(--tomato)">\u{1F345}</div>' +
+    '<div class="card-body">' +
+      '<div class="card-row"><span class="card-name">' + (zh ? '\u856A\u8304\u547C\u5438' : 'Pomo Breathe') + '</span><span class="card-time">~2h</span></div>' +
+      '<div class="card-sub" style="color:var(--tomato);opacity:.8">' + (zh ? '\u5C08\u6CE8\u5DE5\u4F5C + \u5B9A\u6642\u547C\u5438' : 'Focus + Timed Breathing') + '</div>' +
+      '<div class="card-purpose">' + (zh ? '\u5DE5\u4F5C 25 \u5206\u9418 \u2192 \u5171\u632F\u547C\u5438 5 \u5206\u9418' : 'Work 25 min \u2192 Coherent breathing 5 min') + '</div>' +
+    '</div>';
   frag.appendChild(pd);
   c.appendChild(frag);
-  document.querySelector('.home-title').textContent=zh?'呼吸法':'Breathe';
-  document.querySelector('.lang-btn').textContent=zh?'EN':'中';
+  document.querySelector('.home-title').textContent = zh ? '\u547C\u5438\u6CD5' : 'Breathe';
+  document.querySelector('.lang-btn').textContent = zh ? 'EN' : '\u4E2D';
   // Update reminder FAB badge
-  const fab=document.getElementById('reminder-fab');
-  if(reminders.length>0) fab.innerHTML=`\u{1F514}<span class="badge">${reminders.length}</span>`;
-  else fab.innerHTML='\u{1F514}';
+  var fab = document.getElementById('reminder-fab');
+  if (reminders.length > 0) fab.innerHTML = '\u{1F514}<span class="badge">' + reminders.length + '</span>';
+  else fab.innerHTML = '\u{1F514}';
 }
-function toggleLang(){zh=!zh;localStorage.setItem('lang',zh?'zh':'en');renderHome()}
+
+function calcCustomTime() {
+  var s = customSettings;
+  var perCycle = s.inhale + s.hold + s.exhale + s.holdAfter;
+  return Math.round(perCycle * s.cycles);
+}
+
+function toggleLang() { zh = !zh; localStorage.setItem('lang', zh ? 'zh' : 'en'); renderHome(); }
 
 // ===================== AUDIO =====================
-function initAudio(){if(audioCtx)return;audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
-function startWater(){
-  if(!audioCtx||waterNode)return;
-  const node=audioCtx.createScriptProcessor(4096,0,1);
-  let lp1=0,lp2=0;
-  node.onaudioprocess=e=>{const out=e.outputBuffer.getChannelData(0);for(let i=0;i<out.length;i++){const n=Math.random()*2-1;lp1+=.06*(n-lp1);lp2+=.06*(lp1-lp2);const t=audioCtx.currentTime+i/audioCtx.sampleRate;const f1=(1+Math.sin(2*Math.PI*.12*t))*.5;const f2=(1+Math.sin(2*Math.PI*.07*t+2.1))*.5;out[i]=lp2*.12*(.6+.4*f1*f2)}};
-  const gain=audioCtx.createGain();gain.gain.value=.8;node.connect(gain);gain.connect(audioCtx.destination);waterNode={node,gain};
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
-function playPhaseSound(phase){
-  if(!soundOn||!audioCtx)return;
-  const freqs={inhale:[261.6,392,523.2],inhale2:[329.6,392],hold:[196,293.6],holdAfter:[196,293.6],exhale:[130.8,196,329.6],rest:[]};
-  const vols={inhale:.07,inhale2:.05,hold:.025,holdAfter:.025,exhale:.06,rest:0};
-  const durs={inhale:1.2,inhale2:.6,hold:1.2,holdAfter:1.2,exhale:1.2,rest:0};
-  const f=freqs[phase]||[];if(!f.length)return;
-  const dur=durs[phase],vol=vols[phase],t=audioCtx.currentTime;
-  f.forEach((freq,idx)=>{const osc=audioCtx.createOscillator();const g=audioCtx.createGain();osc.frequency.value=freq*(1+idx*.001);osc.type='sine';const amp=vol*(idx===0?1:idx===1?.6:.3);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(amp,t+.03);g.gain.exponentialRampToValueAtTime(.0001,t+dur);osc.connect(g);g.connect(audioCtx.destination);osc.start(t);osc.stop(t+dur)});
+
+// Phase transition sounds (singing bowl)
+function playPhaseSound(phase) {
+  if (!soundOn || !audioCtx) return;
+  var freqs = {inhale:[261.6,392,523.2], inhale2:[329.6,392], hold:[196,293.6], holdAfter:[196,293.6], exhale:[130.8,196,329.6], rest:[]};
+  var vols = {inhale:.07, inhale2:.05, hold:.025, holdAfter:.025, exhale:.06, rest:0};
+  var durs = {inhale:1.2, inhale2:.6, hold:1.2, holdAfter:1.2, exhale:1.2, rest:0};
+  var f = freqs[phase] || [];
+  if (!f.length) return;
+  var dur = durs[phase], vol = vols[phase], t = audioCtx.currentTime;
+  f.forEach(function(freq, idx) {
+    var osc = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    osc.frequency.value = freq * (1 + idx * .001);
+    osc.type = 'sine';
+    var amp = vol * (idx === 0 ? 1 : idx === 1 ? .6 : .3);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(amp, t + .03);
+    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    osc.connect(g);
+    g.connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + dur);
+  });
 }
-function playAlertSound(){
-  if(!audioCtx)return;const t=audioCtx.currentTime;
-  [523.2,659.2,784].forEach((f,i)=>{const o=audioCtx.createOscillator();const g=audioCtx.createGain();o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(0,t+i*.15);g.gain.linearRampToValueAtTime(.08,t+i*.15+.05);g.gain.exponentialRampToValueAtTime(.0001,t+i*.15+.6);o.connect(g);g.connect(audioCtx.destination);o.start(t+i*.15);o.stop(t+i*.15+.6)});
+
+function playAlertSound() {
+  if (!audioCtx) return;
+  var t = audioCtx.currentTime;
+  [523.2, 659.2, 784].forEach(function(f, i) {
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    o.frequency.value = f;
+    o.type = 'sine';
+    g.gain.setValueAtTime(0, t + i * .15);
+    g.gain.linearRampToValueAtTime(.08, t + i * .15 + .05);
+    g.gain.exponentialRampToValueAtTime(.0001, t + i * .15 + .6);
+    o.connect(g);
+    g.connect(audioCtx.destination);
+    o.start(t + i * .15);
+    o.stop(t + i * .15 + .6);
+  });
 }
-function toggleSound(){
-  soundOn=!soundOn;
-  document.getElementById('sound-btn').innerHTML=soundOn?'\u{1F50A}':'\u{1F507}';
-  document.getElementById('pomo-sound-btn').innerHTML=soundOn?'\u{1F50A}':'\u{1F507}';
-  if(waterNode)waterNode.gain.gain.value=soundOn?.8:0;
+
+// ===================== BACKGROUND SOUNDS (Web Audio API) =====================
+function stopBgSound() {
+  if (bgSoundNodes) {
+    try {
+      if (bgSoundNodes.source) bgSoundNodes.source.disconnect();
+      if (bgSoundNodes.gain) bgSoundNodes.gain.disconnect();
+      if (bgSoundNodes.processor) bgSoundNodes.processor.disconnect();
+      if (bgSoundNodes.lfo) bgSoundNodes.lfo.disconnect();
+      if (bgSoundNodes.lfoGain) bgSoundNodes.lfoGain.disconnect();
+      if (bgSoundNodes.filter) bgSoundNodes.filter.disconnect();
+    } catch(e) {}
+    bgSoundNodes = null;
+  }
+}
+
+function startBgSound(soundId) {
+  stopBgSound();
+  if (!audioCtx || soundId === 'silent') return;
+
+  var bufferSize = 4096;
+  var masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.5;
+  masterGain.connect(audioCtx.destination);
+
+  if (soundId === 'rain') {
+    // Rain: filtered noise with random drip impulses
+    var proc = audioCtx.createScriptProcessor(bufferSize, 0, 1);
+    var lp1 = 0, lp2 = 0, dripTimer = 0;
+    proc.onaudioprocess = function(e) {
+      var out = e.outputBuffer.getChannelData(0);
+      for (var i = 0; i < out.length; i++) {
+        var n = Math.random() * 2 - 1;
+        // Low-pass filter for base rain
+        lp1 += 0.04 * (n - lp1);
+        lp2 += 0.04 * (lp1 - lp2);
+        var sample = lp2 * 0.15;
+        // Random drip impulses
+        dripTimer--;
+        if (dripTimer <= 0) {
+          dripTimer = Math.floor(Math.random() * 2000) + 200;
+          sample += (Math.random() * 2 - 1) * 0.3;
+        }
+        if (dripTimer < 10) {
+          sample += (Math.random() * 2 - 1) * 0.08 * (dripTimer / 10);
+        }
+        out[i] = sample;
+      }
+    };
+    proc.connect(masterGain);
+    bgSoundNodes = {processor: proc, gain: masterGain};
+
+  } else if (soundId === 'ocean') {
+    // Ocean: noise with slow sine-wave volume modulation
+    var proc = audioCtx.createScriptProcessor(bufferSize, 0, 1);
+    var olp1 = 0, olp2 = 0;
+    proc.onaudioprocess = function(e) {
+      var out = e.outputBuffer.getChannelData(0);
+      for (var i = 0; i < out.length; i++) {
+        var n = Math.random() * 2 - 1;
+        olp1 += 0.03 * (n - olp1);
+        olp2 += 0.03 * (olp1 - olp2);
+        var t = audioCtx.currentTime + i / audioCtx.sampleRate;
+        // Slow wave modulation (~0.08 Hz = ~12s per wave cycle)
+        var wave1 = (1 + Math.sin(2 * Math.PI * 0.08 * t)) * 0.5;
+        var wave2 = (1 + Math.sin(2 * Math.PI * 0.05 * t + 1.5)) * 0.5;
+        var mod = 0.3 + 0.7 * wave1 * wave2;
+        out[i] = olp2 * 0.2 * mod;
+      }
+    };
+    proc.connect(masterGain);
+    bgSoundNodes = {processor: proc, gain: masterGain};
+
+  } else if (soundId === 'stream') {
+    // Stream: low-pass filtered noise (like old water sound)
+    var proc = audioCtx.createScriptProcessor(bufferSize, 0, 1);
+    var slp1 = 0, slp2 = 0;
+    proc.onaudioprocess = function(e) {
+      var out = e.outputBuffer.getChannelData(0);
+      for (var i = 0; i < out.length; i++) {
+        var n = Math.random() * 2 - 1;
+        slp1 += 0.06 * (n - slp1);
+        slp2 += 0.06 * (slp1 - slp2);
+        var t = audioCtx.currentTime + i / audioCtx.sampleRate;
+        var f1 = (1 + Math.sin(2 * Math.PI * 0.12 * t)) * 0.5;
+        var f2 = (1 + Math.sin(2 * Math.PI * 0.07 * t + 2.1)) * 0.5;
+        out[i] = slp2 * 0.12 * (0.6 + 0.4 * f1 * f2);
+      }
+    };
+    proc.connect(masterGain);
+    bgSoundNodes = {processor: proc, gain: masterGain};
+
+  } else if (soundId === 'whitenoise') {
+    // White noise: unfiltered but quiet
+    var proc = audioCtx.createScriptProcessor(bufferSize, 0, 1);
+    proc.onaudioprocess = function(e) {
+      var out = e.outputBuffer.getChannelData(0);
+      for (var i = 0; i < out.length; i++) {
+        out[i] = (Math.random() * 2 - 1) * 0.06;
+      }
+    };
+    proc.connect(masterGain);
+    bgSoundNodes = {processor: proc, gain: masterGain};
+  }
+}
+
+function updateSoundButtons() {
+  var opt = soundOptions.find(function(o) { return o.id === selectedSound; }) || soundOptions[0];
+  var icon = opt.iconChar;
+  var label = zh ? opt.nameZH : opt.nameEN;
+  var btns = [document.getElementById('sound-pick-btn'), document.getElementById('pomo-sound-pick-btn')];
+  btns.forEach(function(btn) {
+    if (btn) {
+      btn.querySelector('.sp-icon').innerHTML = icon;
+      btn.querySelector('.sp-label').textContent = label;
+    }
+  });
+}
+
+// ===================== SOUND PICKER =====================
+function showSoundPicker() {
+  var modal = document.getElementById('sound-modal');
+  var sheet = document.getElementById('sound-sheet');
+  var html = '<div class="info-handle"></div>';
+  html += '<div class="sound-sheet-title">' + (zh ? '\u80CC\u666F\u97F3\u6548' : 'Background Sound') + '</div>';
+  soundOptions.forEach(function(opt) {
+    var sel = selectedSound === opt.id ? ' selected' : '';
+    html += '<div class="sound-option' + sel + '" onclick="selectSound(\'' + opt.id + '\')">';
+    html += '<div class="sound-option-icon">' + opt.iconChar + '</div>';
+    html += '<div class="sound-option-name">' + (zh ? opt.nameZH : opt.nameEN) + '</div>';
+    html += '<div class="sound-option-check">\u2713</div>';
+    html += '</div>';
+  });
+  sheet.innerHTML = html;
+  modal.classList.add('active');
+}
+
+function selectSound(id) {
+  selectedSound = id;
+  localStorage.setItem('bgSound', id);
+  soundOn = (id !== 'silent');
+  stopBgSound();
+  if (soundOn) {
+    initAudio();
+    startBgSound(id);
+  }
+  updateSoundButtons();
+  // Re-render picker
+  showSoundPicker();
+}
+
+function closeSoundPicker(e) {
+  if (e.target.id === 'sound-modal') {
+    document.getElementById('sound-modal').classList.remove('active');
+  }
 }
 
 // ===================== BREATHING SESSION =====================
-function startSession(t,from){
-  initAudio();soundOn=true;
-  cur=t;stepIdx=0;cycle=1;pomoFrom=from||'home';
-  document.getElementById('session').classList.add('active');document.getElementById('home').style.display='none';document.getElementById('pomo').classList.remove('active');
-  const circle=document.getElementById('circle'),glow=document.getElementById('glow');
-  circle.style.background=`radial-gradient(circle,${t.colorRaw}99,${t.colorRaw}26)`;glow.style.background=t.colorRaw;
-  document.getElementById('arc').style.stroke=t.colorRaw+'59';
-  document.querySelectorAll('.hypno-ring').forEach(r=>{r.style.borderColor=t.colorRaw;r.classList.toggle('visible',t.hypnotic)});
-  const hint=document.getElementById('sleep-hint');
-  if(t.id==='4-7-8'){hint.style.display='block';hint.textContent=zh?'看著圖像變化會更容易有睡意':'Watching the visual changes helps you feel sleepy'}else hint.style.display='none';
-  document.getElementById('info-btn').textContent=zh?'(i) 了解更多':'(i) Learn More';
+function startSession(t, from) {
+  initAudio();
+  // Restore sound preference
+  soundOn = (selectedSound !== 'silent');
+  if (soundOn) startBgSound(selectedSound);
+  updateSoundButtons();
+
+  cur = t;
+  stepIdx = 0;
+  cycle = 1;
+  pomoFrom = from || 'home';
+  document.getElementById('session').classList.add('active');
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('pomo').classList.remove('active');
+  var circle = document.getElementById('circle'), glow = document.getElementById('glow');
+  circle.style.background = 'radial-gradient(circle,' + t.colorRaw + '99,' + t.colorRaw + '26)';
+  glow.style.background = t.colorRaw;
+  document.getElementById('arc').style.stroke = t.colorRaw + '59';
+  document.querySelectorAll('.hypno-ring').forEach(function(r) {
+    r.style.borderColor = t.colorRaw;
+    r.classList.toggle('visible', t.hypnotic);
+  });
+  var hint = document.getElementById('sleep-hint');
+  if (t.id === '4-7-8') {
+    hint.style.display = 'block';
+    hint.textContent = zh ? '\u770B\u8457\u5716\u50CF\u8B8A\u5316\u6703\u66F4\u5BB9\u6613\u6709\u7761\u610F' : 'Watching the visual changes helps you feel sleepy';
+  } else {
+    hint.style.display = 'none';
+  }
+  document.getElementById('info-btn').textContent = zh ? '(i) \u4E86\u89E3\u66F4\u591A' : '(i) Learn More';
   runStep();
 }
-function runStep(){
-  if(!cur)return;const step=cur.steps[stepIdx],p=step.p,d=step.d;phaseDur=d;phaseStart=performance.now();
-  const l=zh?'zh':'en';document.getElementById('phase-label').textContent=phaseNames[p][l];
-  document.getElementById('instruction').textContent=phaseInstr[p][l];document.getElementById('counter').textContent=`${cycle} / ${cur.cycles}`;
-  const sc=scaleMap[p],circle=document.getElementById('circle'),glow=document.getElementById('glow');
-  const ease=p==='inhale'||p==='inhale2'?'ease-in':p==='exhale'?'ease-out':'ease-in-out';
-  const dur=p==='hold'||p==='holdAfter'?.3:d;
-  circle.style.transition=`transform ${dur}s ${ease}`;glow.style.transition=`transform ${dur}s ${ease}`;
-  circle.style.transform=`scale(${sc})`;glow.style.transform=`scale(${sc})`;
-  playPhaseSound(p);if(navigator.vibrate)navigator.vibrate(p==='exhale'?40:p==='hold'||p==='holdAfter'?15:25);
-  startArc();clearTimeout(timer);
-  timer=setTimeout(()=>{stepIdx++;if(stepIdx>=cur.steps.length){stepIdx=0;cycle++;if(cycle>cur.cycles){finishSession();return}}runStep()},d*1000);
+
+function runStep() {
+  if (!cur) return;
+  var step = cur.steps[stepIdx], p = step.p, d = step.d;
+  phaseDur = d;
+  phaseStart = performance.now();
+  var l = zh ? 'zh' : 'en';
+  document.getElementById('phase-label').textContent = phaseNames[p][l];
+  document.getElementById('instruction').textContent = phaseInstr[p][l];
+  document.getElementById('counter').textContent = cycle + ' / ' + cur.cycles;
+  var sc = scaleMap[p], circle = document.getElementById('circle'), glow = document.getElementById('glow');
+  var ease = (p === 'inhale' || p === 'inhale2') ? 'ease-in' : p === 'exhale' ? 'ease-out' : 'ease-in-out';
+  var dur = (p === 'hold' || p === 'holdAfter') ? .3 : d;
+  circle.style.transition = 'transform ' + dur + 's ' + ease;
+  glow.style.transition = 'transform ' + dur + 's ' + ease;
+  circle.style.transform = 'scale(' + sc + ')';
+  glow.style.transform = 'scale(' + sc + ')';
+  playPhaseSound(p);
+  if (navigator.vibrate) navigator.vibrate(p === 'exhale' ? 40 : (p === 'hold' || p === 'holdAfter') ? 15 : 25);
+  startArc();
+  clearTimeout(timer);
+  timer = setTimeout(function() {
+    stepIdx++;
+    if (stepIdx >= cur.steps.length) {
+      stepIdx = 0;
+      cycle++;
+      if (cycle > cur.cycles) { finishSession(); return; }
+    }
+    runStep();
+  }, d * 1000);
 }
-function startArc(){const arc=document.getElementById('arc'),total=835.66;function tick(){const p=Math.min((performance.now()-phaseStart)/1000/phaseDur,1);arc.style.strokeDashoffset=total*(1-p);if(p<1)arcRAF=requestAnimationFrame(tick)}cancelAnimationFrame(arcRAF);tick()}
-function finishSession(){
-  clearTimeout(timer);cancelAnimationFrame(arcRAF);document.getElementById('session').classList.remove('active');
-  if(pomoFrom==='pomo'){cur=null;advancePomo();return}
-  const d=document.getElementById('done');d.classList.add('active');d.style.color=cur.colorRaw;
-  document.getElementById('done-title').textContent=zh?'完成了':'Well Done';
-  document.getElementById('done-sub').textContent=zh?cur.nameZH:cur.nameEN;
-  document.getElementById('done-btn').textContent=zh?'結束':'Done';document.getElementById('done-btn').style.background=cur.colorRaw+'33';
+
+function startArc() {
+  var arc = document.getElementById('arc'), total = 835.66;
+  function tick() {
+    var p = Math.min((performance.now() - phaseStart) / 1000 / phaseDur, 1);
+    arc.style.strokeDashoffset = total * (1 - p);
+    if (p < 1) arcRAF = requestAnimationFrame(tick);
+  }
+  cancelAnimationFrame(arcRAF);
+  tick();
 }
-function closeDone(){document.getElementById('done').classList.remove('active');document.getElementById('home').style.display='flex';cur=null}
-function exitSession(){clearTimeout(timer);cancelAnimationFrame(arcRAF);document.getElementById('session').classList.remove('active');
-  if(pomoFrom==='pomo'){document.getElementById('pomo').classList.add('active');cur=null;return}
-  document.getElementById('home').style.display='flex';cur=null}
+
+function finishSession() {
+  clearTimeout(timer);
+  cancelAnimationFrame(arcRAF);
+  stopBgSound();
+  document.getElementById('session').classList.remove('active');
+  if (pomoFrom === 'pomo') { cur = null; advancePomo(); return; }
+  var d = document.getElementById('done');
+  d.classList.add('active');
+  d.style.color = cur.colorRaw;
+  document.getElementById('done-title').textContent = zh ? '\u5B8C\u6210\u4E86' : 'Well Done';
+  document.getElementById('done-sub').textContent = zh ? cur.nameZH : cur.nameEN;
+  document.getElementById('done-btn').textContent = zh ? '\u7D50\u675F' : 'Done';
+  document.getElementById('done-btn').style.background = cur.colorRaw + '33';
+}
+
+function closeDone() {
+  document.getElementById('done').classList.remove('active');
+  document.getElementById('home').style.display = 'flex';
+  cur = null;
+}
+
+function exitSession() {
+  clearTimeout(timer);
+  cancelAnimationFrame(arcRAF);
+  stopBgSound();
+  document.getElementById('session').classList.remove('active');
+  if (pomoFrom === 'pomo') {
+    document.getElementById('pomo').classList.add('active');
+    cur = null;
+    return;
+  }
+  document.getElementById('home').style.display = 'flex';
+  cur = null;
+}
 
 // ===================== POMODORO =====================
-const POMO_WORK=25*60,POMO_SHORT=5*60,POMO_LONG=15*60,POMO_TOTAL=4;
-function startPomo(){
-  initAudio();pomoState={phase:'work',round:1,remaining:POMO_WORK,total:POMO_WORK,startedAt:Date.now(),pauseOffset:0};pomoPaused=false;
-  document.getElementById('home').style.display='none';document.getElementById('pomo').classList.add('active');
-  document.getElementById('pomo-arc').style.stroke='var(--tomato)';
-  renderPomoUI();tickPomo();
+var POMO_WORK = 25 * 60, POMO_SHORT = 5 * 60, POMO_LONG = 15 * 60, POMO_TOTAL = 4;
+
+function startPomo() {
+  initAudio();
+  pomoState = {phase: 'work', round: 1, remaining: POMO_WORK, total: POMO_WORK, startedAt: Date.now(), pauseOffset: 0};
+  pomoPaused = false;
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('pomo').classList.add('active');
+  document.getElementById('pomo-arc').style.stroke = 'var(--tomato)';
+  updateSoundButtons();
+  renderPomoUI();
+  tickPomo();
 }
-function renderPomoUI(){
-  const s=pomoState;if(!s)return;
-  const statusMap={work:{zh:'專注工作中',en:'Focus Time'},shortBreak:{zh:'呼吸休息',en:'Breathing Break'},longBreak:{zh:'長休息',en:'Long Break'}};
-  document.getElementById('pomo-status').textContent=statusMap[s.phase][zh?'zh':'en'];
-  // dots
-  let dots='';for(let i=1;i<=POMO_TOTAL;i++){const cls=i<s.round?'done':i===s.round?'active':'';dots+=`<div class="pomo-dot ${cls}"></div>`}
-  document.getElementById('pomo-dots').innerHTML=dots;
-  document.getElementById('pomo-label').textContent=zh?`第 ${s.round} / ${POMO_TOTAL} 個蕃茄`:`Pomodoro ${s.round} / ${POMO_TOTAL}`;
-  document.getElementById('pomo-pause').textContent=pomoPaused?(zh?'繼續':'Resume'):(zh?'暫停':'Pause');
-  // color
-  document.getElementById('pomo-arc').style.stroke=s.phase==='work'?'var(--tomato)':'var(--sage)';
+
+function renderPomoUI() {
+  var s = pomoState;
+  if (!s) return;
+  var statusMap = {work: {zh: '\u5C08\u6CE8\u5DE5\u4F5C\u4E2D', en: 'Focus Time'}, shortBreak: {zh: '\u547C\u5438\u4F11\u606F', en: 'Breathing Break'}, longBreak: {zh: '\u9577\u4F11\u606F', en: 'Long Break'}};
+  document.getElementById('pomo-status').textContent = statusMap[s.phase][zh ? 'zh' : 'en'];
+  var dots = '';
+  for (var i = 1; i <= POMO_TOTAL; i++) {
+    var cls = i < s.round ? 'done' : i === s.round ? 'active' : '';
+    dots += '<div class="pomo-dot ' + cls + '"></div>';
+  }
+  document.getElementById('pomo-dots').innerHTML = dots;
+  document.getElementById('pomo-label').textContent = zh ? '\u7B2C ' + s.round + ' / ' + POMO_TOTAL + ' \u500B\u856A\u8304' : 'Pomodoro ' + s.round + ' / ' + POMO_TOTAL;
+  document.getElementById('pomo-pause').textContent = pomoPaused ? (zh ? '\u7E7C\u7E8C' : 'Resume') : (zh ? '\u66AB\u505C' : 'Pause');
+  document.getElementById('pomo-arc').style.stroke = s.phase === 'work' ? 'var(--tomato)' : 'var(--sage)';
 }
-function tickPomo(){
+
+function tickPomo() {
   cancelAnimationFrame(pomoRAF);
-  function frame(){
-    if(!pomoState)return;
-    if(!pomoPaused){
-      const elapsed=(Date.now()-pomoState.startedAt-pomoState.pauseOffset)/1000;
-      pomoState.remaining=Math.max(0,pomoState.total-elapsed);
+  function frame() {
+    if (!pomoState) return;
+    if (!pomoPaused) {
+      var elapsed = (Date.now() - pomoState.startedAt - pomoState.pauseOffset) / 1000;
+      pomoState.remaining = Math.max(0, pomoState.total - elapsed);
     }
-    // update display
-    const r=pomoState.remaining,m=Math.floor(r/60),s=Math.floor(r%60);
-    document.getElementById('pomo-time').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    const prog=1-pomoState.remaining/pomoState.total,circ=753.98;
-    document.getElementById('pomo-arc').style.strokeDashoffset=circ*(1-prog);
-    if(pomoState.remaining<=0){onPomoPhaseEnd();return}
-    pomoRAF=requestAnimationFrame(frame);
+    var r = pomoState.remaining, m = Math.floor(r / 60), s = Math.floor(r % 60);
+    document.getElementById('pomo-time').textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    var prog = 1 - pomoState.remaining / pomoState.total, circ = 753.98;
+    document.getElementById('pomo-arc').style.strokeDashoffset = circ * (1 - prog);
+    if (pomoState.remaining <= 0) { onPomoPhaseEnd(); return; }
+    pomoRAF = requestAnimationFrame(frame);
   }
   frame();
 }
-function onPomoPhaseEnd(){
-  playAlertSound();if(navigator.vibrate)navigator.vibrate([100,50,100]);
-  const s=pomoState;
-  if(s.phase==='work'){
-    if(s.round>=POMO_TOTAL){
-      // start long break
-      s.phase='longBreak';s.total=POMO_LONG;s.remaining=POMO_LONG;s.startedAt=Date.now();s.pauseOffset=0;
-      renderPomoUI();tickPomo();
-    } else {
-      // start breathing break (coherent breathing)
-      s.phase='shortBreak';
+
+function onPomoPhaseEnd() {
+  playAlertSound();
+  if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+  var s = pomoState;
+  if (s.phase === 'work') {
+    if (s.round >= POMO_TOTAL) {
+      s.phase = 'longBreak';
+      s.total = POMO_LONG;
+      s.remaining = POMO_LONG;
+      s.startedAt = Date.now();
+      s.pauseOffset = 0;
       renderPomoUI();
-      const coherent=techniques.find(t=>t.id==='coherent');
-      startSession(coherent,'pomo');
+      tickPomo();
+    } else {
+      s.phase = 'shortBreak';
+      renderPomoUI();
+      var coherent = techniques.find(function(t) { return t.id === 'coherent'; });
+      startSession(coherent, 'pomo');
     }
-  } else if(s.phase==='shortBreak'){
-    // back to work
-    s.round++;s.phase='work';s.total=POMO_WORK;s.remaining=POMO_WORK;s.startedAt=Date.now();s.pauseOffset=0;
-    renderPomoUI();tickPomo();
-  } else if(s.phase==='longBreak'){
+  } else if (s.phase === 'shortBreak') {
+    s.round++;
+    s.phase = 'work';
+    s.total = POMO_WORK;
+    s.remaining = POMO_WORK;
+    s.startedAt = Date.now();
+    s.pauseOffset = 0;
+    renderPomoUI();
+    tickPomo();
+  } else if (s.phase === 'longBreak') {
     finishPomo();
   }
 }
-function advancePomo(){
-  // called when breathing session finishes during pomo break
-  const s=pomoState;if(!s)return;
+
+function advancePomo() {
+  var s = pomoState;
+  if (!s) return;
   document.getElementById('pomo').classList.add('active');
-  s.round++;s.phase='work';s.total=POMO_WORK;s.remaining=POMO_WORK;s.startedAt=Date.now();s.pauseOffset=0;
-  renderPomoUI();tickPomo();
+  s.round++;
+  s.phase = 'work';
+  s.total = POMO_WORK;
+  s.remaining = POMO_WORK;
+  s.startedAt = Date.now();
+  s.pauseOffset = 0;
+  renderPomoUI();
+  tickPomo();
 }
-function finishPomo(){
-  cancelAnimationFrame(pomoRAF);pomoState=null;
+
+function finishPomo() {
+  cancelAnimationFrame(pomoRAF);
+  pomoState = null;
   document.getElementById('pomo').classList.remove('active');
-  const d=document.getElementById('done');d.classList.add('active');d.style.color='var(--tomato)';
-  document.getElementById('done-title').textContent=zh?'太棒了！':'Great Job!';
-  document.getElementById('done-sub').textContent=zh?`完成 ${POMO_TOTAL} 個蕃茄 + ${POMO_TOTAL-1} 次呼吸練習`:`${POMO_TOTAL} pomodoros + ${POMO_TOTAL-1} breathing sessions`;
-  document.getElementById('done-btn').textContent=zh?'結束':'Done';document.getElementById('done-btn').style.background='rgba(232,99,74,.2)';
+  var d = document.getElementById('done');
+  d.classList.add('active');
+  d.style.color = 'var(--tomato)';
+  document.getElementById('done-title').textContent = zh ? '\u592A\u68D2\u4E86\uFF01' : 'Great Job!';
+  document.getElementById('done-sub').textContent = zh ? '\u5B8C\u6210 ' + POMO_TOTAL + ' \u500B\u856A\u8304 + ' + (POMO_TOTAL - 1) + ' \u6B21\u547C\u5438\u7DF4\u7FD2' : POMO_TOTAL + ' pomodoros + ' + (POMO_TOTAL - 1) + ' breathing sessions';
+  document.getElementById('done-btn').textContent = zh ? '\u7D50\u675F' : 'Done';
+  document.getElementById('done-btn').style.background = 'rgba(232,99,74,.2)';
 }
-function togglePomoPause(){
-  if(!pomoState)return;
-  if(pomoPaused){pomoState.startedAt=Date.now();pomoState.remaining=pomoState.remaining;pomoState.total=pomoState.remaining;pomoState.pauseOffset=0;pomoPaused=false;tickPomo()}
-  else{pomoPaused=true}
+
+function togglePomoPause() {
+  if (!pomoState) return;
+  if (pomoPaused) {
+    pomoState.startedAt = Date.now();
+    pomoState.remaining = pomoState.remaining;
+    pomoState.total = pomoState.remaining;
+    pomoState.pauseOffset = 0;
+    pomoPaused = false;
+    tickPomo();
+  } else {
+    pomoPaused = true;
+  }
   renderPomoUI();
 }
-function exitPomo(){cancelAnimationFrame(pomoRAF);pomoState=null;pomoPaused=false;document.getElementById('pomo').classList.remove('active');document.getElementById('home').style.display='flex'}
+
+function exitPomo() {
+  cancelAnimationFrame(pomoRAF);
+  pomoState = null;
+  pomoPaused = false;
+  stopBgSound();
+  document.getElementById('pomo').classList.remove('active');
+  document.getElementById('home').style.display = 'flex';
+}
+
+// ===================== CUSTOM BREATHE MODAL =====================
+function showCustomModal() {
+  document.getElementById('custom-modal').classList.add('active');
+  renderCustomModal();
+}
+
+function renderCustomModal() {
+  var s = customSettings;
+  var sheet = document.getElementById('custom-sheet');
+  var perCycle = s.inhale + s.hold + s.exhale + s.holdAfter;
+  var totalTime = perCycle * s.cycles;
+
+  // Preview bar segments
+  var segments = '';
+  var colors = {inhale: '#5cad9e', hold: '#7366bf', exhale: '#6699cc', holdAfter: '#f28d73'};
+  if (s.inhale > 0) {
+    var w = (s.inhale / perCycle * 100);
+    segments += '<div class="custom-preview-seg" style="width:' + w + '%;background:' + colors.inhale + '">' + s.inhale + 's</div>';
+  }
+  if (s.hold > 0) {
+    var w = (s.hold / perCycle * 100);
+    segments += '<div class="custom-preview-seg" style="width:' + w + '%;background:' + colors.hold + '">' + s.hold + 's</div>';
+  }
+  if (s.exhale > 0) {
+    var w = (s.exhale / perCycle * 100);
+    segments += '<div class="custom-preview-seg" style="width:' + w + '%;background:' + colors.exhale + '">' + s.exhale + 's</div>';
+  }
+  if (s.holdAfter > 0) {
+    var w = (s.holdAfter / perCycle * 100);
+    segments += '<div class="custom-preview-seg" style="width:' + w + '%;background:' + colors.holdAfter + '">' + s.holdAfter + 's</div>';
+  }
+
+  var inhaleLabel = zh ? '\u5438\u6C23' : 'Inhale';
+  var holdLabel = zh ? '\u5438\u5F8C\u618B\u6C23' : 'Hold';
+  var exhaleLabel = zh ? '\u5410\u6C23' : 'Exhale';
+  var holdAfterLabel = zh ? '\u5410\u5F8C\u618B\u6C23' : 'Hold After Exhale';
+  var cyclesLabel = zh ? '\u5FAA\u74B0\u6B21\u6578' : 'Cycles';
+  var previewLabel = zh ? '\u7BC0\u594F\u9810\u89BD' : 'Rhythm Preview';
+  var totalLabel = zh ? '\u7E3D\u6642\u9577' : 'Total';
+  var startLabel = zh ? '\u958B\u59CB' : 'Start';
+
+  var html = '<div style="position:relative">';
+  html += '<div class="custom-title">' + (zh ? '\u81EA\u8A02\u547C\u5438' : 'Custom Breathe') + '</div>';
+
+  // Inhale
+  html += '<div class="custom-row">';
+  html += '<div class="custom-row-label">' + inhaleLabel + ' (1-10s)</div>';
+  html += '<div class="custom-row-control">';
+  html += '<button class="custom-adj" onclick="adjCustom(\'inhale\',-1)">-</button>';
+  html += '<span class="custom-val">' + s.inhale + '</span>';
+  html += '<button class="custom-adj" onclick="adjCustom(\'inhale\',1)">+</button>';
+  html += '</div></div>';
+
+  // Hold
+  html += '<div class="custom-row">';
+  html += '<div class="custom-row-label">' + holdLabel + ' (0-15s)</div>';
+  html += '<div class="custom-row-control">';
+  html += '<button class="custom-adj" onclick="adjCustom(\'hold\',-1)">-</button>';
+  html += '<span class="custom-val">' + s.hold + '</span>';
+  html += '<button class="custom-adj" onclick="adjCustom(\'hold\',1)">+</button>';
+  html += '</div></div>';
+
+  // Exhale
+  html += '<div class="custom-row">';
+  html += '<div class="custom-row-label">' + exhaleLabel + ' (1-15s)</div>';
+  html += '<div class="custom-row-control">';
+  html += '<button class="custom-adj" onclick="adjCustom(\'exhale\',-1)">-</button>';
+  html += '<span class="custom-val">' + s.exhale + '</span>';
+  html += '<button class="custom-adj" onclick="adjCustom(\'exhale\',1)">+</button>';
+  html += '</div></div>';
+
+  // Hold after exhale
+  html += '<div class="custom-row">';
+  html += '<div class="custom-row-label">' + holdAfterLabel + ' (0-15s)</div>';
+  html += '<div class="custom-row-control">';
+  html += '<button class="custom-adj" onclick="adjCustom(\'holdAfter\',-1)">-</button>';
+  html += '<span class="custom-val">' + s.holdAfter + '</span>';
+  html += '<button class="custom-adj" onclick="adjCustom(\'holdAfter\',1)">+</button>';
+  html += '</div></div>';
+
+  // Cycles
+  html += '<div class="custom-row">';
+  html += '<div class="custom-row-label">' + cyclesLabel + ' (1-30)</div>';
+  html += '<div class="custom-row-control">';
+  html += '<button class="custom-adj" onclick="adjCustom(\'cycles\',-1)">-</button>';
+  html += '<span class="custom-val">' + s.cycles + '</span>';
+  html += '<button class="custom-adj" onclick="adjCustom(\'cycles\',1)">+</button>';
+  html += '</div></div>';
+
+  // Preview
+  html += '<div class="custom-preview">';
+  html += '<div style="font-size:13px;color:var(--text2);margin-bottom:8px">' + previewLabel + '</div>';
+  html += '<div class="custom-preview-bar">' + segments + '</div>';
+  html += '<div class="custom-preview-total">' + totalLabel + ': ' + totalTime + 's (~' + Math.round(totalTime / 60 * 10) / 10 + ' min) \u00D7 ' + s.cycles + ' ' + cyclesLabel.toLowerCase() + '</div>';
+  html += '</div>';
+
+  // Start
+  html += '<button class="custom-start" onclick="startCustomSession()">' + startLabel + '</button>';
+  html += '</div>';
+
+  sheet.innerHTML = html;
+}
+
+function adjCustom(field, delta) {
+  var mins = {inhale: 1, hold: 0, exhale: 1, holdAfter: 0, cycles: 1};
+  var maxs = {inhale: 10, hold: 15, exhale: 15, holdAfter: 15, cycles: 30};
+  customSettings[field] = Math.max(mins[field], Math.min(maxs[field], customSettings[field] + delta));
+  localStorage.setItem('customBreath', JSON.stringify(customSettings));
+  renderCustomModal();
+}
+
+function startCustomSession() {
+  document.getElementById('custom-modal').classList.remove('active');
+  var s = customSettings;
+  var steps = [];
+  steps.push({p: 'inhale', d: s.inhale});
+  if (s.hold > 0) steps.push({p: 'hold', d: s.hold});
+  steps.push({p: 'exhale', d: s.exhale});
+  if (s.holdAfter > 0) steps.push({p: 'holdAfter', d: s.holdAfter});
+
+  var perCycle = s.inhale + s.hold + s.exhale + s.holdAfter;
+  var totalTime = perCycle * s.cycles;
+
+  var customTechnique = {
+    id: 'custom',
+    icon: '\u2699\uFE0F',
+    nameEN: 'Custom Breathe',
+    nameZH: '\u81EA\u8A02\u547C\u5438',
+    subEN: 'Your Rhythm',
+    subZH: '\u81EA\u8A02\u7BC0\u594F',
+    purposeEN: 'Custom breathing pattern',
+    purposeZH: '\u81EA\u8A02\u547C\u5438\u6A21\u5F0F',
+    time: '~' + totalTime + 's',
+    color: 'var(--teal)',
+    colorRaw: '#5cad9e',
+    steps: steps,
+    cycles: s.cycles,
+    hypnotic: false,
+    info: {
+      descEN: 'Custom breathing pattern: inhale ' + s.inhale + 's' + (s.hold > 0 ? ', hold ' + s.hold + 's' : '') + ', exhale ' + s.exhale + 's' + (s.holdAfter > 0 ? ', hold ' + s.holdAfter + 's' : '') + '.',
+      descZH: '\u81EA\u8A02\u547C\u5438\uFF1A\u5438\u6C23 ' + s.inhale + '\u79D2' + (s.hold > 0 ? '\u3001\u618B\u6C23 ' + s.hold + '\u79D2' : '') + '\u3001\u5410\u6C23 ' + s.exhale + '\u79D2' + (s.holdAfter > 0 ? '\u3001\u618B\u6C23 ' + s.holdAfter + '\u79D2' : '') + '\u3002',
+      sciEN: 'Personalized breathing pattern tailored to your needs.',
+      sciZH: '\u6839\u64DA\u500B\u4EBA\u9700\u6C42\u8A2D\u5B9A\u7684\u547C\u5438\u6A21\u5F0F\u3002',
+      srcEN: 'Custom',
+      srcZH: '\u81EA\u8A02',
+      warnEN: 'Listen to your body. Stop if you feel dizzy.',
+      warnZH: '\u8ACB\u50BE\u807D\u8EAB\u9AD4\u3002\u611F\u5230\u982D\u6688\u8ACB\u505C\u6B62\u3002'
+    }
+  };
+  startSession(customTechnique);
+}
+
+function closeCustom(e) {
+  if (e.target.id === 'custom-modal') {
+    document.getElementById('custom-modal').classList.remove('active');
+  }
+}
 
 // ===================== REMINDERS =====================
-function showReminder(){
-  const m=document.getElementById('reminder-modal');m.classList.add('active');renderReminder();
+function showReminder() {
+  var m = document.getElementById('reminder-modal');
+  m.classList.add('active');
+  renderReminder();
 }
-function renderReminder(){
-  let html=`<div class="reminder-title">${zh?'呼吸提醒':'Breathing Reminders'}</div><div class="reminder-list">`;
-  reminders.forEach((r,i)=>{
-    html+=`<div class="reminder-item"><input type="time" value="${r.time}" onchange="updateReminder(${i},this.value)"><span style="font-size:12px;color:var(--text2)">${zh?'每日':'Daily'}</span><button class="reminder-del" onclick="deleteReminder(${i})">\u{2715}</button></div>`;
+
+function renderReminder() {
+  var html = '<div class="reminder-title">' + (zh ? '\u547C\u5438\u63D0\u9192' : 'Breathing Reminders') + '</div><div class="reminder-list">';
+  reminders.forEach(function(r, i) {
+    html += '<div class="reminder-item"><input type="time" value="' + r.time + '" onchange="updateReminder(' + i + ',this.value)"><span style="font-size:12px;color:var(--text2)">' + (zh ? '\u6BCF\u65E5' : 'Daily') + '</span><button class="reminder-del" onclick="deleteReminder(' + i + ')">\u{2715}</button></div>';
   });
-  html+=`</div>`;
-  if(reminders.length<3) html+=`<button class="reminder-add" onclick="addReminder()">+ ${zh?'新增提醒':'Add Reminder'}</button>`;
-  html+=`<button class="reminder-save" onclick="saveReminders()">${zh?'儲存':'Save'}</button>`;
-  html+=`<div class="reminder-note">${zh?'提醒功能需要保持此頁面開啟':'Reminders require this page to stay open'}</div>`;
-  document.getElementById('reminder-sheet').innerHTML=html;
+  html += '</div>';
+  if (reminders.length < 3) html += '<button class="reminder-add" onclick="addReminder()">+ ' + (zh ? '\u65B0\u589E\u63D0\u9192' : 'Add Reminder') + '</button>';
+  html += '<button class="reminder-save" onclick="saveReminders()">' + (zh ? '\u5132\u5B58' : 'Save') + '</button>';
+  html += '<div class="reminder-note">' + (zh ? '\u63D0\u9192\u529F\u80FD\u9700\u8981\u4FDD\u6301\u6B64\u9801\u9762\u958B\u555F' : 'Reminders require this page to stay open') + '</div>';
+  document.getElementById('reminder-sheet').innerHTML = html;
 }
-function addReminder(){reminders.push({time:'09:00',daily:true});renderReminder()}
-function deleteReminder(i){reminders.splice(i,1);renderReminder()}
-function updateReminder(i,v){reminders[i].time=v}
-function saveReminders(){
-  localStorage.setItem('reminders',JSON.stringify(reminders));
-  if(reminders.length>0&&'Notification' in window&&Notification.permission==='default'){Notification.requestPermission()}
-  document.getElementById('reminder-modal').classList.remove('active');renderHome();
+
+function addReminder() { reminders.push({time: '09:00', daily: true}); renderReminder(); }
+function deleteReminder(i) { reminders.splice(i, 1); renderReminder(); }
+function updateReminder(i, v) { reminders[i].time = v; }
+
+function saveReminders() {
+  localStorage.setItem('reminders', JSON.stringify(reminders));
+  if (reminders.length > 0 && 'Notification' in window && Notification.permission === 'default') { Notification.requestPermission(); }
+  document.getElementById('reminder-modal').classList.remove('active');
+  renderHome();
 }
-function closeReminder(e){if(e.target.id==='reminder-modal')document.getElementById('reminder-modal').classList.remove('active')}
+
+function closeReminder(e) {
+  if (e.target.id === 'reminder-modal') document.getElementById('reminder-modal').classList.remove('active');
+}
+
 // Check reminders every 30s
-let lastNotified={};
-setInterval(()=>{
-  if(!reminders.length)return;
-  const now=new Date(),hm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-  reminders.forEach(r=>{
-    if(r.time===hm&&lastNotified[r.time]!==now.getMinutes()){
-      lastNotified[r.time]=now.getMinutes();
-      if('Notification' in window&&Notification.permission==='granted'){
-        new Notification(zh?'BreathFlow 呼吸提醒':'BreathFlow Reminder',{body:zh?'是時候放鬆一下了 — 開始呼吸練習':'Time to relax — start a breathing exercise',icon:'\u{1F30A}'});
+var lastNotified = {};
+setInterval(function() {
+  if (!reminders.length) return;
+  var now = new Date(), hm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+  reminders.forEach(function(r) {
+    if (r.time === hm && lastNotified[r.time] !== now.getMinutes()) {
+      lastNotified[r.time] = now.getMinutes();
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(zh ? 'BreathFlow \u547C\u5438\u63D0\u9192' : 'BreathFlow Reminder', {body: zh ? '\u662F\u6642\u5019\u653E\u9B06\u4E00\u4E0B\u4E86 \u2014 \u958B\u59CB\u547C\u5438\u7DF4\u7FD2' : 'Time to relax \u2014 start a breathing exercise', icon: '\u{1F30A}'});
       }
       playAlertSound();
     }
   });
-},30000);
+}, 30000);
 
 // ===================== INFO =====================
-function showInfo(){
-  if(!cur)return;const i=cur.info,l=zh;
-  let html=`<div class="info-handle"></div><div class="info-header"><span style="font-size:28px;color:${cur.colorRaw}">${cur.icon}</span><h2>${l?cur.nameZH:cur.nameEN}</h2><button class="info-close" onclick="closeInfo(event)">\u{2715}</button></div>
-    <div class="info-section"><h3 style="color:${cur.colorRaw}">${l?'簡介':'About'}</h3><p>${l?i.descZH:i.descEN}</p></div>
-    <div class="info-section"><h3 style="color:${cur.colorRaw}">${l?'科學驗證':'Science'}</h3><p>${l?i.sciZH:i.sciEN}</p></div>
-    <div class="info-section"><h3 style="color:${cur.colorRaw}">${l?'研究來源':'Source'}</h3><p>${l?i.srcZH:i.srcEN}</p></div>`;
-  const w=l?i.warnZH:i.warnEN;if(w)html+=`<div class="info-warning"><h3>\u{26A0} ${l?'注意事項':'Caution'}</h3><p>${w}</p></div>`;
-  html+=`<div class="info-section"><h3 style="color:${cur.colorRaw}">${l?'節奏':'Rhythm'}</h3><div class="rhythm-tags">`;
-  cur.steps.forEach(s=>{html+=`<span class="rhythm-tag">${phaseNames[s.p][l?'zh':'en']} ${s.d}s</span>`});
-  html+=`</div></div>`;
-  document.getElementById('info-sheet').innerHTML=html;document.getElementById('info-modal').classList.add('active');
+function showInfo() {
+  if (!cur) return;
+  var i = cur.info, l = zh;
+  var html = '<div class="info-handle"></div><div class="info-header"><span style="font-size:28px;color:' + cur.colorRaw + '">' + cur.icon + '</span><h2>' + (l ? cur.nameZH : cur.nameEN) + '</h2><button class="info-close" onclick="closeInfo(event)">\u{2715}</button></div>' +
+    '<div class="info-section"><h3 style="color:' + cur.colorRaw + '">' + (l ? '\u7C21\u4ECB' : 'About') + '</h3><p>' + (l ? i.descZH : i.descEN) + '</p></div>' +
+    '<div class="info-section"><h3 style="color:' + cur.colorRaw + '">' + (l ? '\u79D1\u5B78\u9A57\u8B49' : 'Science') + '</h3><p>' + (l ? i.sciZH : i.sciEN) + '</p></div>' +
+    '<div class="info-section"><h3 style="color:' + cur.colorRaw + '">' + (l ? '\u7814\u7A76\u4F86\u6E90' : 'Source') + '</h3><p>' + (l ? i.srcZH : i.srcEN) + '</p></div>';
+  var w = l ? i.warnZH : i.warnEN;
+  if (w) html += '<div class="info-warning"><h3>\u{26A0} ' + (l ? '\u6CE8\u610F\u4E8B\u9805' : 'Caution') + '</h3><p>' + w + '</p></div>';
+  html += '<div class="info-section"><h3 style="color:' + cur.colorRaw + '">' + (l ? '\u7BC0\u594F' : 'Rhythm') + '</h3><div class="rhythm-tags">';
+  cur.steps.forEach(function(s) {
+    html += '<span class="rhythm-tag">' + phaseNames[s.p][l ? 'zh' : 'en'] + ' ' + s.d + 's</span>';
+  });
+  html += '</div></div>';
+  document.getElementById('info-sheet').innerHTML = html;
+  document.getElementById('info-modal').classList.add('active');
 }
-function closeInfo(e){if(e.target.id==='info-modal'||e.target.classList.contains('info-close'))document.getElementById('info-modal').classList.remove('active')}
+
+function closeInfo(e) {
+  if (e.target.id === 'info-modal' || e.target.classList.contains('info-close')) document.getElementById('info-modal').classList.remove('active');
+}
 
 // ===================== INIT =====================
 renderHome();
-if('Notification' in window&&Notification.permission==='default'&&reminders.length>0)Notification.requestPermission();
+updateSoundButtons();
+if ('Notification' in window && Notification.permission === 'default' && reminders.length > 0) Notification.requestPermission();
 </script>
 </body>
 </html>
