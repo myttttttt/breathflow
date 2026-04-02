@@ -7,6 +7,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#121219">
 <title>BreathFlow</title>
+<!-- Firebase compat SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -20,9 +24,22 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 
 /* HOME */
 #home{display:flex;flex-direction:column;height:100%;padding:env(safe-area-inset-top) 24px 0}
-.top-bar{display:flex;justify-content:flex-end;gap:8px;padding:16px 0 0}
+.top-bar{display:flex;justify-content:flex-end;gap:8px;padding:16px 0 0;align-items:center}
 .top-btn{width:36px;height:36px;border-radius:50%;background:var(--card);border:none;color:var(--text);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .lang-btn{width:36px;height:36px;border-radius:50%;background:var(--card);border:none;color:var(--text);font-size:14px;font-weight:500;cursor:pointer}
+/* Login button */
+.login-btn{height:36px;border-radius:18px;background:var(--card);border:none;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;padding:0 14px;display:flex;align-items:center;gap:6px}
+.login-btn:active{transform:scale(.95)}
+.avatar-btn{width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;padding:0;background:none;position:relative}
+.avatar-btn img{width:36px;height:36px;border-radius:50%;object-fit:cover;display:block}
+/* User dropdown */
+.user-dropdown{position:absolute;top:44px;right:0;background:var(--card);border-radius:14px;padding:16px;min-width:180px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:30;display:none}
+.user-dropdown.active{display:block}
+.user-dropdown-name{font-size:14px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-dropdown-email{font-size:11px;color:var(--text2);margin-bottom:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.logout-btn{width:100%;padding:10px;background:rgba(255,255,255,.08);border:none;border-radius:10px;color:var(--coral);font-size:13px;font-weight:500;cursor:pointer}
+.logout-btn:active{transform:scale(.97)}
+
 /* Reminder FAB */
 .reminder-fab{position:fixed;bottom:32px;right:24px;width:52px;height:52px;border-radius:50%;background:var(--card);border:1px solid rgba(255,255,255,.1);color:var(--text);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;box-shadow:0 4px 16px rgba(0,0,0,.4);transition:transform .15s}
 .reminder-fab:active{transform:scale(.9)}
@@ -39,6 +56,15 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .card-time{font-size:12px;color:var(--text2)}
 .card-sub{font-size:13px;margin-top:3px}
 .card-purpose{font-size:12px;color:var(--text2);margin-top:2px}
+
+/* Stats card */
+.stats-card{padding:20px;background:var(--card);border-radius:16px;text-align:center;margin-top:4px}
+.stats-streak{font-size:40px;font-weight:700;margin-bottom:4px}
+.stats-streak-label{font-size:14px;color:var(--text2);margin-bottom:14px}
+.stats-row{display:flex;justify-content:center;gap:24px}
+.stats-item{text-align:center}
+.stats-item-value{font-size:18px;font-weight:600}
+.stats-item-label{font-size:11px;color:var(--text2);margin-top:2px}
 
 /* SESSION (breathing) */
 #session{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;z-index:10}
@@ -80,7 +106,9 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 #done.active{display:flex}
 .done-icon{font-size:60px;margin-bottom:16px}
 .done-title{font-size:28px;font-weight:300;margin-bottom:8px}
-.done-sub{font-size:14px;color:var(--text2);margin-bottom:60px}
+.done-sub{font-size:14px;color:var(--text2);margin-bottom:8px}
+.done-streak{font-size:22px;font-weight:600;margin-bottom:4px}
+.done-streak-text{font-size:13px;color:var(--text2);margin-bottom:40px}
 .done-btn{background:rgba(255,255,255,.1);border:none;color:var(--text);font-size:20px;font-weight:600;padding:16px 0;width:calc(100% - 80px);border-radius:14px;cursor:pointer}
 
 /* INFO MODAL */
@@ -171,6 +199,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 <!-- HOME -->
 <div id="home">
   <div class="top-bar">
+    <div id="auth-area"></div>
     <button class="lang-btn" onclick="toggleLang()">EN</button>
   </div>
   <h1 class="home-title">&#x547C;&#x5438;&#x6CD5;</h1>
@@ -245,6 +274,8 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
   <div class="done-icon">&#x2714;</div>
   <div class="done-title" id="done-title"></div>
   <div class="done-sub" id="done-sub"></div>
+  <div class="done-streak" id="done-streak"></div>
+  <div class="done-streak-text" id="done-streak-text"></div>
   <button class="done-btn" id="done-btn" onclick="closeDone()"></button>
 </div>
 
@@ -269,6 +300,150 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 </div>
 
 <script>
+// ===================== FIREBASE INIT =====================
+var firebaseConfig = {
+  apiKey: "AIzaSyBSmInWyK_opDtZ4WXZK1yP92hMFFrfI8M",
+  authDomain: "breathflow-7f9b0.firebaseapp.com",
+  projectId: "breathflow-7f9b0",
+  storageBucket: "breathflow-7f9b0.firebasestorage.app",
+  messagingSenderId: "783371986995",
+  appId: "1:783371986995:web:7313d82c56146b1b621b46"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+var currentUser = null;
+var userStats = null;
+
+// ===================== AUTH =====================
+firebase.auth().onAuthStateChanged(function(user) {
+  currentUser = user;
+  if (user) {
+    // Save profile on login
+    db.collection('users').doc(user.uid).collection('profile').doc('info').set({
+      name: user.displayName || '',
+      email: user.email || '',
+      photoURL: user.photoURL || ''
+    }, {merge: true});
+    loadUserStats();
+  } else {
+    userStats = null;
+  }
+  renderAuthArea();
+  renderHome();
+});
+
+function loginWithGoogle() {
+  var provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).catch(function(err) {
+    console.error('Login error:', err);
+  });
+}
+
+function logoutUser() {
+  firebase.auth().signOut();
+  closeUserDropdown();
+}
+
+function renderAuthArea() {
+  var area = document.getElementById('auth-area');
+  if (!area) return;
+  if (currentUser) {
+    var photo = currentUser.photoURL || '';
+    area.innerHTML = '<button class="avatar-btn" onclick="toggleUserDropdown(event)">' +
+      '<img src="' + photo + '" alt="" onerror="this.style.display=\'none\'">' +
+      '</button>' +
+      '<div class="user-dropdown" id="user-dropdown">' +
+        '<div class="user-dropdown-name">' + (currentUser.displayName || '') + '</div>' +
+        '<div class="user-dropdown-email">' + (currentUser.email || '') + '</div>' +
+        '<button class="logout-btn" onclick="logoutUser()">' + (zh ? '\u767B\u51FA' : 'Logout') + '</button>' +
+      '</div>';
+  } else {
+    area.innerHTML = '<button class="login-btn" onclick="loginWithGoogle()">' + (zh ? '\u767B\u5165' : 'Login') + '</button>';
+  }
+}
+
+function toggleUserDropdown(e) {
+  e.stopPropagation();
+  var dd = document.getElementById('user-dropdown');
+  if (dd) dd.classList.toggle('active');
+}
+
+function closeUserDropdown() {
+  var dd = document.getElementById('user-dropdown');
+  if (dd) dd.classList.remove('active');
+}
+
+// Close dropdown when clicking elsewhere
+document.addEventListener('click', function() {
+  closeUserDropdown();
+});
+
+// ===================== FIRESTORE STATS =====================
+function loadUserStats() {
+  if (!currentUser) return;
+  db.collection('users').doc(currentUser.uid).collection('stats').doc('summary').get().then(function(doc) {
+    if (doc.exists) {
+      userStats = doc.data();
+    } else {
+      userStats = {totalSessions: 0, totalMinutes: 0, currentStreak: 0, longestStreak: 0, lastSessionDate: null};
+    }
+    renderHome();
+  }).catch(function(err) {
+    console.error('Error loading stats:', err);
+  });
+}
+
+function getTodayStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function getYesterdayStr() {
+  var d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function saveSessionToFirestore(techniqueName, durationSec) {
+  if (!currentUser) return;
+  var uid = currentUser.uid;
+
+  // Write session document
+  db.collection('users').doc(uid).collection('sessions').add({
+    technique: techniqueName,
+    duration: durationSec,
+    completedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  // Read and update stats
+  var statsRef = db.collection('users').doc(uid).collection('stats').doc('summary');
+  statsRef.get().then(function(doc) {
+    var stats = doc.exists ? doc.data() : {totalSessions: 0, totalMinutes: 0, currentStreak: 0, longestStreak: 0, lastSessionDate: null};
+    var today = getTodayStr();
+    var yesterday = getYesterdayStr();
+
+    // Calculate streak
+    if (stats.lastSessionDate === today) {
+      // Same day, no streak change
+    } else if (stats.lastSessionDate === yesterday) {
+      stats.currentStreak = (stats.currentStreak || 0) + 1;
+    } else {
+      stats.currentStreak = 1;
+    }
+
+    stats.totalSessions = (stats.totalSessions || 0) + 1;
+    stats.totalMinutes = (stats.totalMinutes || 0) + durationSec / 60;
+    stats.longestStreak = Math.max(stats.currentStreak, stats.longestStreak || 0);
+    stats.lastSessionDate = today;
+
+    return statsRef.set(stats);
+  }).then(function() {
+    loadUserStats();
+  }).catch(function(err) {
+    console.error('Error saving stats:', err);
+  });
+}
+
 // ===================== DATA =====================
 var techniques = [
   {id:'4-7-8',icon:'\u{1F319}',nameEN:'4-7-8 Breathing',nameZH:'4-7-8 \u547C\u5438\u6CD5',subEN:'Deep Sedation',subZH:'\u6DF1\u5EA6\u52A9\u7720',purposeEN:'Insomnia, racing thoughts',purposeZH:'\u5931\u7720\u3001\u601D\u7DD2\u72C2\u5954',time:'~76s',color:'var(--indigo)',colorRaw:'#7366bf',steps:[{p:'inhale',d:4},{p:'hold',d:7},{p:'exhale',d:8}],cycles:4,hypnotic:true,
@@ -302,6 +477,7 @@ var bgSoundNodes = null;
 var pomoState = null, pomoTimer = null, pomoRAF = null, pomoPaused = false;
 var pomoFrom = 'home';
 var reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+var sessionStartTime = null;
 
 // Custom breathing defaults
 var customDefaults = {inhale:4,hold:0,exhale:4,holdAfter:0,cycles:4};
@@ -343,6 +519,25 @@ function renderHome() {
     '</div>';
   frag.appendChild(customCard);
 
+  // Stats card (only when logged in and stats loaded)
+  if (currentUser && userStats) {
+    var statsDiv = document.createElement('div');
+    statsDiv.className = 'stats-card';
+    var streak = userStats.currentStreak || 0;
+    var totalS = userStats.totalSessions || 0;
+    var totalM = Math.round(userStats.totalMinutes || 0);
+    var longest = userStats.longestStreak || 0;
+    statsDiv.innerHTML =
+      '<div class="stats-streak">\uD83D\uDD25 ' + streak + ' ' + (zh ? '\u5929' : 'days') + '</div>' +
+      '<div class="stats-streak-label">' + (zh ? '\u9023\u7E8C\u7DF4\u7FD2' : 'Current Streak') + '</div>' +
+      '<div class="stats-row">' +
+        '<div class="stats-item"><div class="stats-item-value">' + totalS + '</div><div class="stats-item-label">' + (zh ? '\u7E3D\u6B21\u6578' : 'Sessions') + '</div></div>' +
+        '<div class="stats-item"><div class="stats-item-value">' + totalM + '</div><div class="stats-item-label">' + (zh ? '\u7E3D\u5206\u9418' : 'Minutes') + '</div></div>' +
+        '<div class="stats-item"><div class="stats-item-value">' + longest + '</div><div class="stats-item-label">' + (zh ? '\u6700\u9577\u9023\u7E8C' : 'Best Streak') + '</div></div>' +
+      '</div>';
+    frag.appendChild(statsDiv);
+  }
+
   // Tools section label
   var tLabel = document.createElement('div');
   tLabel.className = 'section-label';
@@ -367,6 +562,8 @@ function renderHome() {
   var fab = document.getElementById('reminder-fab');
   if (reminders.length > 0) fab.innerHTML = '\u{1F514}<span class="badge">' + reminders.length + '</span>';
   else fab.innerHTML = '\u{1F514}';
+  // Update auth area for language change
+  renderAuthArea();
 }
 
 function calcCustomTime() {
@@ -451,18 +648,15 @@ function startBgSound(soundId) {
   masterGain.connect(audioCtx.destination);
 
   if (soundId === 'rain') {
-    // Rain: filtered noise with random drip impulses
     var proc = audioCtx.createScriptProcessor(bufferSize, 0, 1);
     var lp1 = 0, lp2 = 0, dripTimer = 0;
     proc.onaudioprocess = function(e) {
       var out = e.outputBuffer.getChannelData(0);
       for (var i = 0; i < out.length; i++) {
         var n = Math.random() * 2 - 1;
-        // Low-pass filter for base rain
         lp1 += 0.04 * (n - lp1);
         lp2 += 0.04 * (lp1 - lp2);
         var sample = lp2 * 0.15;
-        // Random drip impulses
         dripTimer--;
         if (dripTimer <= 0) {
           dripTimer = Math.floor(Math.random() * 2000) + 200;
@@ -478,7 +672,6 @@ function startBgSound(soundId) {
     bgSoundNodes = {processor: proc, gain: masterGain};
 
   } else if (soundId === 'ocean') {
-    // Ocean: noise with slow sine-wave volume modulation
     var proc = audioCtx.createScriptProcessor(bufferSize, 0, 1);
     var olp1 = 0, olp2 = 0;
     proc.onaudioprocess = function(e) {
@@ -488,7 +681,6 @@ function startBgSound(soundId) {
         olp1 += 0.03 * (n - olp1);
         olp2 += 0.03 * (olp1 - olp2);
         var t = audioCtx.currentTime + i / audioCtx.sampleRate;
-        // Slow wave modulation (~0.08 Hz = ~12s per wave cycle)
         var wave1 = (1 + Math.sin(2 * Math.PI * 0.08 * t)) * 0.5;
         var wave2 = (1 + Math.sin(2 * Math.PI * 0.05 * t + 1.5)) * 0.5;
         var mod = 0.3 + 0.7 * wave1 * wave2;
@@ -499,7 +691,6 @@ function startBgSound(soundId) {
     bgSoundNodes = {processor: proc, gain: masterGain};
 
   } else if (soundId === 'stream') {
-    // Stream: low-pass filtered noise (like old water sound)
     var proc = audioCtx.createScriptProcessor(bufferSize, 0, 1);
     var slp1 = 0, slp2 = 0;
     proc.onaudioprocess = function(e) {
@@ -518,7 +709,6 @@ function startBgSound(soundId) {
     bgSoundNodes = {processor: proc, gain: masterGain};
 
   } else if (soundId === 'whitenoise') {
-    // White noise: unfiltered but quiet
     var proc = audioCtx.createScriptProcessor(bufferSize, 0, 1);
     proc.onaudioprocess = function(e) {
       var out = e.outputBuffer.getChannelData(0);
@@ -572,7 +762,6 @@ function selectSound(id) {
     startBgSound(id);
   }
   updateSoundButtons();
-  // Re-render picker
   showSoundPicker();
 }
 
@@ -585,7 +774,6 @@ function closeSoundPicker(e) {
 // ===================== BREATHING SESSION =====================
 function startSession(t, from) {
   initAudio();
-  // Restore sound preference
   soundOn = (selectedSound !== 'silent');
   if (soundOn) startBgSound(selectedSound);
   updateSoundButtons();
@@ -594,6 +782,7 @@ function startSession(t, from) {
   stepIdx = 0;
   cycle = 1;
   pomoFrom = from || 'home';
+  sessionStartTime = Date.now();
   document.getElementById('session').classList.add('active');
   document.getElementById('home').style.display = 'none';
   document.getElementById('pomo').classList.remove('active');
@@ -663,12 +852,46 @@ function finishSession() {
   cancelAnimationFrame(arcRAF);
   stopBgSound();
   document.getElementById('session').classList.remove('active');
-  if (pomoFrom === 'pomo') { cur = null; advancePomo(); return; }
+
+  // Calculate duration
+  var durationSec = sessionStartTime ? Math.round((Date.now() - sessionStartTime) / 1000) : 0;
+  var techniqueName = cur ? (zh ? cur.nameZH : cur.nameEN) : 'Unknown';
+
+  if (pomoFrom === 'pomo') {
+    // Save to Firestore even for pomo breathing breaks
+    if (currentUser) {
+      saveSessionToFirestore(techniqueName, durationSec);
+    }
+    cur = null;
+    advancePomo();
+    return;
+  }
+
+  // Save to Firestore
+  if (currentUser) {
+    saveSessionToFirestore(techniqueName, durationSec);
+  }
+
   var d = document.getElementById('done');
   d.classList.add('active');
   d.style.color = cur.colorRaw;
   document.getElementById('done-title').textContent = zh ? '\u5B8C\u6210\u4E86' : 'Well Done';
   document.getElementById('done-sub').textContent = zh ? cur.nameZH : cur.nameEN;
+
+  // Show streak on done screen if logged in
+  var doneStreak = document.getElementById('done-streak');
+  var doneStreakText = document.getElementById('done-streak-text');
+  if (currentUser && userStats) {
+    var streak = userStats.currentStreak || 1;
+    doneStreak.textContent = '\uD83D\uDD25 ' + (zh ? '\u9023\u7E8C ' + streak + ' \u5929' : streak + ' day streak');
+    doneStreak.style.display = 'block';
+    doneStreakText.textContent = zh ? '\u7E7C\u7E8C\u4FDD\u6301\uFF0C\u4F60\u505A\u5F97\u5F88\u68D2\uFF01' : 'Keep going, you are doing great!';
+    doneStreakText.style.display = 'block';
+  } else {
+    doneStreak.style.display = 'none';
+    doneStreakText.style.display = 'none';
+  }
+
   document.getElementById('done-btn').textContent = zh ? '\u7D50\u675F' : 'Done';
   document.getElementById('done-btn').style.background = cur.colorRaw + '33';
 }
@@ -800,6 +1023,9 @@ function finishPomo() {
   document.getElementById('done-sub').textContent = zh ? '\u5B8C\u6210 ' + POMO_TOTAL + ' \u500B\u856A\u8304 + ' + (POMO_TOTAL - 1) + ' \u6B21\u547C\u5438\u7DF4\u7FD2' : POMO_TOTAL + ' pomodoros + ' + (POMO_TOTAL - 1) + ' breathing sessions';
   document.getElementById('done-btn').textContent = zh ? '\u7D50\u675F' : 'Done';
   document.getElementById('done-btn').style.background = 'rgba(232,99,74,.2)';
+  // Hide streak for pomo done
+  document.getElementById('done-streak').style.display = 'none';
+  document.getElementById('done-streak-text').style.display = 'none';
 }
 
 function togglePomoPause() {
@@ -838,7 +1064,6 @@ function renderCustomModal() {
   var perCycle = s.inhale + s.hold + s.exhale + s.holdAfter;
   var totalTime = perCycle * s.cycles;
 
-  // Preview bar segments
   var segments = '';
   var colors = {inhale: '#5cad9e', hold: '#7366bf', exhale: '#6699cc', holdAfter: '#f28d73'};
   if (s.inhale > 0) {
@@ -870,7 +1095,6 @@ function renderCustomModal() {
   var html = '<div style="position:relative">';
   html += '<div class="custom-title">' + (zh ? '\u81EA\u8A02\u547C\u5438' : 'Custom Breathe') + '</div>';
 
-  // Inhale
   html += '<div class="custom-row">';
   html += '<div class="custom-row-label">' + inhaleLabel + ' (1-10s)</div>';
   html += '<div class="custom-row-control">';
@@ -879,7 +1103,6 @@ function renderCustomModal() {
   html += '<button class="custom-adj" onclick="adjCustom(\'inhale\',1)">+</button>';
   html += '</div></div>';
 
-  // Hold
   html += '<div class="custom-row">';
   html += '<div class="custom-row-label">' + holdLabel + ' (0-15s)</div>';
   html += '<div class="custom-row-control">';
@@ -888,7 +1111,6 @@ function renderCustomModal() {
   html += '<button class="custom-adj" onclick="adjCustom(\'hold\',1)">+</button>';
   html += '</div></div>';
 
-  // Exhale
   html += '<div class="custom-row">';
   html += '<div class="custom-row-label">' + exhaleLabel + ' (1-15s)</div>';
   html += '<div class="custom-row-control">';
@@ -897,7 +1119,6 @@ function renderCustomModal() {
   html += '<button class="custom-adj" onclick="adjCustom(\'exhale\',1)">+</button>';
   html += '</div></div>';
 
-  // Hold after exhale
   html += '<div class="custom-row">';
   html += '<div class="custom-row-label">' + holdAfterLabel + ' (0-15s)</div>';
   html += '<div class="custom-row-control">';
@@ -906,7 +1127,6 @@ function renderCustomModal() {
   html += '<button class="custom-adj" onclick="adjCustom(\'holdAfter\',1)">+</button>';
   html += '</div></div>';
 
-  // Cycles
   html += '<div class="custom-row">';
   html += '<div class="custom-row-label">' + cyclesLabel + ' (1-30)</div>';
   html += '<div class="custom-row-control">';
@@ -915,14 +1135,12 @@ function renderCustomModal() {
   html += '<button class="custom-adj" onclick="adjCustom(\'cycles\',1)">+</button>';
   html += '</div></div>';
 
-  // Preview
   html += '<div class="custom-preview">';
   html += '<div style="font-size:13px;color:var(--text2);margin-bottom:8px">' + previewLabel + '</div>';
   html += '<div class="custom-preview-bar">' + segments + '</div>';
   html += '<div class="custom-preview-total">' + totalLabel + ': ' + totalTime + 's (~' + Math.round(totalTime / 60 * 10) / 10 + ' min) \u00D7 ' + s.cycles + ' ' + cyclesLabel.toLowerCase() + '</div>';
   html += '</div>';
 
-  // Start
   html += '<button class="custom-start" onclick="startCustomSession()">' + startLabel + '</button>';
   html += '</div>';
 
