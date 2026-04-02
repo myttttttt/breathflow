@@ -16,19 +16,26 @@
 :root{
   --bg:#121219;--card:#21212b;
   --text:rgba(255,255,255,.9);--text2:rgba(255,255,255,.5);
+  --card-shadow:none;
   --coral:#f28d73;--blue:#6699cc;--indigo:#7366bf;--sage:#8cbf8c;--tomato:#e8634a;
   --teal:#5cad9e;
   --font:-apple-system,BlinkMacSystemFont,'SF Pro Rounded','Helvetica Neue',sans-serif;
+}
+html[data-theme="light"]{
+  --bg:#f5f5f0;--card:#ffffff;
+  --text:rgba(0,0,0,.85);--text2:rgba(0,0,0,.45);
+  --card-shadow:0 1px 4px rgba(0,0,0,.08);
 }
 html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;-webkit-tap-highlight-color:transparent}
 
 /* HOME */
 #home{display:flex;flex-direction:column;height:100%;padding:env(safe-area-inset-top) 24px 0}
 .top-bar{display:flex;justify-content:flex-end;gap:8px;padding:16px 0 0;align-items:center}
-.top-btn{width:36px;height:36px;border-radius:50%;background:var(--card);border:none;color:var(--text);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.lang-btn{width:36px;height:36px;border-radius:50%;background:var(--card);border:none;color:var(--text);font-size:14px;font-weight:500;cursor:pointer}
+.top-btn{width:36px;height:36px;border-radius:50%;background:var(--card);border:none;color:var(--text);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--card-shadow)}
+.lang-btn{width:36px;height:36px;border-radius:50%;background:var(--card);border:none;color:var(--text);font-size:14px;font-weight:500;cursor:pointer;box-shadow:var(--card-shadow)}
+.theme-btn{width:36px;height:36px;border-radius:50%;background:var(--card);border:none;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--card-shadow)}
 /* Login button */
-.login-btn{height:36px;border-radius:18px;background:var(--card);border:none;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;padding:0 14px;display:flex;align-items:center;gap:6px}
+.login-btn{height:36px;border-radius:18px;background:var(--card);border:none;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;padding:0 14px;display:flex;align-items:center;gap:6px;box-shadow:var(--card-shadow)}
 .login-btn:active{transform:scale(.95)}
 .avatar-btn{width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;padding:0;background:none;position:relative}
 .avatar-btn img{width:36px;height:36px;border-radius:50%;object-fit:cover;display:block}
@@ -38,16 +45,18 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .user-dropdown-name{font-size:14px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .user-dropdown-email{font-size:11px;color:var(--text2);margin-bottom:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .logout-btn{width:100%;padding:10px;background:rgba(255,255,255,.08);border:none;border-radius:10px;color:var(--coral);font-size:13px;font-weight:500;cursor:pointer}
+html[data-theme="light"] .logout-btn{background:rgba(0,0,0,.05)}
 .logout-btn:active{transform:scale(.97)}
 
 /* Reminder FAB */
 .reminder-fab{position:fixed;bottom:32px;right:24px;width:52px;height:52px;border-radius:50%;background:var(--card);border:1px solid rgba(255,255,255,.1);color:var(--text);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;box-shadow:0 4px 16px rgba(0,0,0,.4);transition:transform .15s}
+html[data-theme="light"] .reminder-fab{border-color:rgba(0,0,0,.08);box-shadow:0 2px 12px rgba(0,0,0,.12)}
 .reminder-fab:active{transform:scale(.9)}
 .reminder-fab .badge{position:absolute;top:-2px;right:-2px;width:18px;height:18px;border-radius:50%;background:var(--sage);color:#000;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .home-title{text-align:center;font-size:34px;font-weight:200;margin:8px 0 20px;letter-spacing:2px}
 .cards{display:flex;flex-direction:column;gap:14px;overflow-y:auto;flex:1;padding-bottom:40px}
 .section-label{font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin:8px 0 4px}
-.card{display:flex;align-items:center;gap:16px;padding:16px;background:var(--card);border-radius:16px;cursor:pointer;transition:transform .15s}
+.card{display:flex;align-items:center;gap:16px;padding:16px;background:var(--card);border-radius:16px;cursor:pointer;transition:transform .15s;box-shadow:var(--card-shadow)}
 .card:active{transform:scale(.97)}
 .card-icon{width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:24px}
 .card-body{flex:1}
@@ -58,7 +67,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .card-purpose{font-size:12px;color:var(--text2);margin-top:2px}
 
 /* Stats card */
-.stats-card{padding:20px;background:var(--card);border-radius:16px;text-align:center;margin-top:4px}
+.stats-card{padding:20px;background:var(--card);border-radius:16px;text-align:center;margin-top:4px;box-shadow:var(--card-shadow)}
 .stats-streak{font-size:40px;font-weight:700;margin-bottom:4px}
 .stats-streak-label{font-size:14px;color:var(--text2);margin-bottom:14px}
 .stats-row{display:flex;justify-content:center;gap:24px}
@@ -66,15 +75,20 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .stats-item-value{font-size:18px;font-weight:600}
 .stats-item-label{font-size:11px;color:var(--text2);margin-top:2px}
 
-/* SESSION (breathing) */
-#session{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;z-index:10}
+/* SESSION (breathing) - always dark */
+#session{position:fixed;inset:0;background:#121219;display:none;flex-direction:column;z-index:10;color:rgba(255,255,255,.9)}
 #session.active{display:flex}
 .sess-top{display:flex;justify-content:space-between;align-items:center;padding:60px 24px 0}
-.sess-btn{background:none;border:none;color:var(--text);font-size:20px;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+.sess-btn{background:none;border:none;color:rgba(255,255,255,.9);font-size:20px;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
 .sess-right{display:flex;align-items:center;gap:8px}
-.sess-counter{font-size:14px;font-family:monospace;color:var(--text)}
+.sess-counter{font-size:14px;font-family:monospace;color:rgba(255,255,255,.9)}
+
+/* Background sound icon button (session top bar) */
+.bg-sound-btn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.85);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .2s}
+.bg-sound-btn.muted{opacity:.35}
+
 .sess-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.phase-label{font-size:30px;font-weight:300;margin-bottom:48px;transition:opacity .3s}
+.phase-label{font-size:30px;font-weight:300;margin-bottom:48px;transition:opacity .3s;color:rgba(255,255,255,.9)}
 .breath-area{position:relative;width:340px;height:340px;display:flex;align-items:center;justify-content:center}
 .breath-circle{width:220px;height:220px;border-radius:50%;position:absolute;transition:transform ease-in-out;will-change:transform}
 .breath-glow{width:260px;height:260px;border-radius:50%;position:absolute;filter:blur(20px);opacity:.08;transition:transform ease-in-out;will-change:transform}
@@ -93,33 +107,29 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 @keyframes spin4{to{transform:rotate(-360deg)}}
 @keyframes spin5{to{transform:rotate(360deg)}}
 .sess-footer{text-align:center;padding-bottom:40px}
-.instruction{font-size:16px;color:var(--text2);margin-bottom:4px;transition:opacity .3s}
+.instruction{font-size:16px;color:rgba(255,255,255,.5);margin-bottom:4px;transition:opacity .3s}
 .sleep-hint{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:16px}
-.info-btn{background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;padding:8px}
+.info-btn{background:none;border:none;color:rgba(255,255,255,.5);font-size:13px;cursor:pointer;padding:8px}
 
-/* Sound picker button */
-.sound-pick-btn{background:var(--card);border:none;color:var(--text);font-size:13px;cursor:pointer;height:36px;border-radius:18px;padding:0 12px;display:flex;align-items:center;gap:6px;white-space:nowrap}
-.sound-pick-btn .sp-icon{font-size:16px}
-
-/* DONE */
-#done{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:11}
+/* DONE - always dark */
+#done{position:fixed;inset:0;background:#121219;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:11;color:rgba(255,255,255,.9)}
 #done.active{display:flex}
 .done-icon{font-size:60px;margin-bottom:16px}
 .done-title{font-size:28px;font-weight:300;margin-bottom:8px}
-.done-sub{font-size:14px;color:var(--text2);margin-bottom:8px}
+.done-sub{font-size:14px;color:rgba(255,255,255,.5);margin-bottom:8px}
 .done-streak{font-size:22px;font-weight:600;margin-bottom:4px}
-.done-streak-text{font-size:13px;color:var(--text2);margin-bottom:40px}
-.done-btn{background:rgba(255,255,255,.1);border:none;color:var(--text);font-size:20px;font-weight:600;padding:16px 0;width:calc(100% - 80px);border-radius:14px;cursor:pointer}
+.done-streak-text{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:40px}
+.done-btn{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.9);font-size:20px;font-weight:600;padding:16px 0;width:calc(100% - 80px);border-radius:14px;cursor:pointer}
 
 /* INFO MODAL */
 #info-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:20;align-items:flex-end;justify-content:center}
 #info-modal.active{display:flex}
-.info-sheet{background:var(--bg);border-radius:20px 20px 0 0;width:100%;max-height:70vh;overflow-y:auto;padding:24px 24px env(safe-area-inset-bottom)}
+.info-sheet{background:#121219;border-radius:20px 20px 0 0;width:100%;max-height:70vh;overflow-y:auto;padding:24px 24px env(safe-area-inset-bottom);color:rgba(255,255,255,.9)}
 .info-handle{width:40px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:0 auto 20px}
 .info-header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
 .info-header span{font-size:28px}
 .info-header h2{font-size:24px;font-weight:300;flex:1}
-.info-close{background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer}
+.info-close{background:none;border:none;color:rgba(255,255,255,.5);font-size:22px;cursor:pointer}
 .info-section{margin-bottom:20px}
 .info-section h3{font-size:15px;font-weight:600;margin-bottom:8px}
 .info-section p{font-size:16px;line-height:1.6;color:rgba(255,255,255,.85)}
@@ -127,7 +137,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .info-warning h3{color:rgba(255,200,0,.8)}
 .info-warning p{color:rgba(255,255,255,.8)}
 .rhythm-tags{display:flex;gap:8px;flex-wrap:wrap}
-.rhythm-tag{background:var(--card);padding:6px 10px;border-radius:8px;font-size:13px;color:rgba(255,255,255,.7)}
+.rhythm-tag{background:#21212b;padding:6px 10px;border-radius:8px;font-size:13px;color:rgba(255,255,255,.7)}
 
 /* REMINDER MODAL */
 #reminder-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:20;align-items:center;justify-content:center}
@@ -137,40 +147,42 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .reminder-list{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
 .reminder-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border-radius:12px}
 .reminder-item input[type=time]{background:transparent;border:none;color:var(--text);font-size:18px;font-family:monospace;flex:1;outline:none}
-.reminder-item input[type=time]::-webkit-calendar-picker-indicator{filter:invert(1)}
+html[data-theme="light"] .reminder-item input[type=time]::-webkit-calendar-picker-indicator{filter:none}
+html:not([data-theme="light"]) .reminder-item input[type=time]::-webkit-calendar-picker-indicator{filter:invert(1)}
 .reminder-del{background:none;border:none;color:var(--coral);font-size:18px;cursor:pointer}
 .reminder-add{width:100%;padding:12px;background:var(--card);border:1px dashed rgba(255,255,255,.2);border-radius:12px;color:var(--text2);font-size:14px;cursor:pointer;margin-bottom:16px}
+html[data-theme="light"] .reminder-add{border-color:rgba(0,0,0,.15)}
 .reminder-save{width:100%;padding:14px;background:var(--sage);border:none;border-radius:12px;color:#000;font-size:16px;font-weight:600;cursor:pointer}
 .reminder-note{font-size:11px;color:var(--text2);text-align:center;margin-top:12px}
 
-/* POMODORO */
-#pomo{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;z-index:10}
+/* POMODORO - always dark */
+#pomo{position:fixed;inset:0;background:#121219;display:none;flex-direction:column;z-index:10;color:rgba(255,255,255,.9)}
 #pomo.active{display:flex}
 .pomo-top{display:flex;justify-content:space-between;align-items:center;padding:60px 24px 0}
 .pomo-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.pomo-status{font-size:16px;color:var(--text2);margin-bottom:8px}
+.pomo-status{font-size:16px;color:rgba(255,255,255,.5);margin-bottom:8px}
 .pomo-ring{position:relative;width:260px;height:260px;margin-bottom:32px}
 .pomo-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
-.pomo-ring circle.bg{fill:none;stroke:var(--card);stroke-width:6}
+.pomo-ring circle.bg{fill:none;stroke:#21212b;stroke-width:6}
 .pomo-ring circle.fg{fill:none;stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset .5s linear}
-.pomo-time{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px;font-weight:200;font-family:monospace}
+.pomo-time{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px;font-weight:200;font-family:monospace;color:rgba(255,255,255,.9)}
 .pomo-dots{display:flex;gap:12px;margin-bottom:24px}
-.pomo-dot{width:12px;height:12px;border-radius:50%;background:var(--card);transition:background .3s}
+.pomo-dot{width:12px;height:12px;border-radius:50%;background:#21212b;transition:background .3s}
 .pomo-dot.done{background:var(--tomato)}
 .pomo-dot.active{background:var(--tomato);box-shadow:0 0 8px var(--tomato)}
-.pomo-label{font-size:14px;color:var(--text2)}
+.pomo-label{font-size:14px;color:rgba(255,255,255,.5)}
 .pomo-footer{text-align:center;padding-bottom:40px}
-.pomo-pause{background:none;border:1px solid rgba(255,255,255,.2);color:var(--text);padding:10px 32px;border-radius:10px;font-size:15px;cursor:pointer}
+.pomo-pause{background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.9);padding:10px 32px;border-radius:10px;font-size:15px;cursor:pointer}
 
 /* CUSTOM BREATHE MODAL */
 #custom-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:20;align-items:center;justify-content:center}
 #custom-modal.active{display:flex}
 .custom-sheet{background:var(--bg);border-radius:20px;width:calc(100% - 48px);max-width:380px;padding:24px;max-height:90vh;overflow-y:auto}
 .custom-title{font-size:20px;font-weight:600;margin-bottom:20px;text-align:center}
-.custom-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.custom-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(128,128,128,.12)}
 .custom-row-label{font-size:14px;color:var(--text)}
 .custom-row-control{display:flex;align-items:center;gap:10px}
-.custom-adj{width:32px;height:32px;border-radius:50%;background:var(--card);border:none;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.custom-adj{width:32px;height:32px;border-radius:50%;background:var(--card);border:none;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--card-shadow)}
 .custom-adj:active{transform:scale(.9)}
 .custom-val{font-size:18px;font-weight:600;min-width:32px;text-align:center;font-family:monospace}
 .custom-preview{margin:20px 0 16px;text-align:center}
@@ -183,10 +195,10 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 /* SOUND PICKER BOTTOM SHEET */
 #sound-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:25;align-items:flex-end;justify-content:center}
 #sound-modal.active{display:flex}
-.sound-sheet{background:var(--bg);border-radius:20px 20px 0 0;width:100%;padding:20px 24px env(safe-area-inset-bottom);max-height:50vh}
+.sound-sheet{background:#121219;border-radius:20px 20px 0 0;width:100%;padding:20px 24px env(safe-area-inset-bottom);max-height:50vh;color:rgba(255,255,255,.9)}
 .sound-sheet .info-handle{width:40px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:0 auto 16px}
 .sound-sheet-title{font-size:16px;font-weight:600;margin-bottom:16px;text-align:center}
-.sound-option{display:flex;align-items:center;gap:14px;padding:14px;background:var(--card);border-radius:12px;cursor:pointer;margin-bottom:8px;border:2px solid transparent;transition:border-color .2s}
+.sound-option{display:flex;align-items:center;gap:14px;padding:14px;background:#21212b;border-radius:12px;cursor:pointer;margin-bottom:8px;border:2px solid transparent;transition:border-color .2s}
 .sound-option.selected{border-color:var(--teal)}
 .sound-option-icon{font-size:22px;width:36px;text-align:center}
 .sound-option-name{font-size:15px;font-weight:500;flex:1}
@@ -200,6 +212,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 <div id="home">
   <div class="top-bar">
     <div id="auth-area"></div>
+    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()"></button>
     <button class="lang-btn" onclick="toggleLang()">EN</button>
   </div>
   <h1 class="home-title">&#x547C;&#x5438;&#x6CD5;</h1>
@@ -212,10 +225,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
   <div class="sess-top">
     <button class="sess-btn" onclick="exitSession()">&#x2715;</button>
     <div class="sess-right">
-      <button class="sound-pick-btn" id="sound-pick-btn" onclick="showSoundPicker()">
-        <span class="sp-icon">&#x1F507;</span>
-        <span class="sp-label"></span>
-      </button>
+      <button class="bg-sound-btn" id="bg-sound-btn" onclick="showSoundPicker()" title="Background sound">&#x266A;</button>
       <span class="sess-counter" id="counter"></span>
     </div>
   </div>
@@ -246,10 +256,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
   <div class="pomo-top">
     <button class="sess-btn" onclick="exitPomo()">&#x2715;</button>
     <div class="sess-right">
-      <button class="sound-pick-btn" id="pomo-sound-pick-btn" onclick="showSoundPicker()">
-        <span class="sp-icon">&#x1F507;</span>
-        <span class="sp-label"></span>
-      </button>
+      <button class="bg-sound-btn" id="pomo-bg-sound-btn" onclick="showSoundPicker()" title="Background sound">&#x266A;</button>
     </div>
   </div>
   <div class="pomo-body">
@@ -313,6 +320,27 @@ firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 var currentUser = null;
 var userStats = null;
+
+// ===================== THEME =====================
+var isDayMode = localStorage.getItem('theme') === 'light';
+function applyTheme() {
+  if (isDayMode) {
+    document.documentElement.setAttribute('data-theme', 'light');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  var btn = document.getElementById('theme-btn');
+  if (btn) {
+    // Show sun when in night mode (to switch to day), moon when in day mode (to switch to night)
+    btn.textContent = isDayMode ? '\u263E' : '\u2600';
+  }
+}
+function toggleTheme() {
+  isDayMode = !isDayMode;
+  localStorage.setItem('theme', isDayMode ? 'light' : 'dark');
+  applyTheme();
+}
+applyTheme();
 
 // ===================== AUTH =====================
 firebase.auth().onAuthStateChanged(function(user) {
@@ -459,7 +487,7 @@ var phaseNames={inhale:{zh:'\u5438\u6C23',en:'Inhale'},inhale2:{zh:'\u5438\u6C23
 var phaseInstr={inhale:{zh:'\u7528\u9F3B\u5B50\u6162\u6162\u5438\u6C23',en:'Breathe in through your nose'},inhale2:{zh:'\u518D\u5438\u4E00\u5C0F\u53E3\u6C23',en:'One more sip of air'},hold:{zh:'\u8F15\u8F15\u5C4F\u4F4F\u547C\u5438',en:'Hold gently'},holdAfter:{zh:'\u8F15\u8F15\u5C4F\u4F4F\u547C\u5438',en:'Hold gently'},exhale:{zh:'\u7DE9\u6162\u5730\u5410\u6C23',en:'Slowly release'},rest:{zh:'\u81EA\u7136\u505C\u9813',en:'Natural pause'}};
 var scaleMap={inhale:1,inhale2:1.15,hold:1,exhale:.35,holdAfter:.35,rest:.4};
 
-// ===================== SOUND OPTIONS =====================
+// ===================== SOUND OPTIONS (background sounds only) =====================
 var soundOptions = [
   {id:'silent',iconChar:'\u{1F507}',nameZH:'\u7121\u8072',nameEN:'Silent'},
   {id:'rain',iconChar:'\u{1F327}',nameZH:'\u96E8\u8072',nameEN:'Rain'},
@@ -471,7 +499,7 @@ var soundOptions = [
 // ===================== STATE =====================
 var zh = localStorage.getItem('lang') !== 'en';
 var cur = null, stepIdx = 0, cycle = 1, timer = null, arcRAF = null, phaseStart = 0, phaseDur = 0;
-var soundOn = false, audioCtx = null;
+var audioCtx = null;
 var selectedSound = localStorage.getItem('bgSound') || 'silent';
 var bgSoundNodes = null;
 var pomoState = null, pomoTimer = null, pomoRAF = null, pomoPaused = false;
@@ -519,7 +547,25 @@ function renderHome() {
     '</div>';
   frag.appendChild(customCard);
 
-  // Stats card (only when logged in and stats loaded)
+  // Tools section label
+  var tLabel = document.createElement('div');
+  tLabel.className = 'section-label';
+  tLabel.style.marginTop = '12px';
+  tLabel.textContent = zh ? '\u5DE5\u5177' : 'Tools';
+  frag.appendChild(tLabel);
+  // Pomodoro card
+  var pd = document.createElement('div');
+  pd.className = 'card';
+  pd.onclick = startPomo;
+  pd.innerHTML = '<div class="card-icon" style="color:var(--tomato)">\u{1F345}</div>' +
+    '<div class="card-body">' +
+      '<div class="card-row"><span class="card-name">' + (zh ? '\u856A\u8304\u547C\u5438' : 'Pomo Breathe') + '</span><span class="card-time">~2h</span></div>' +
+      '<div class="card-sub" style="color:var(--tomato);opacity:.8">' + (zh ? '\u5C08\u6CE8\u5DE5\u4F5C + \u5B9A\u6642\u547C\u5438' : 'Focus + Timed Breathing') + '</div>' +
+      '<div class="card-purpose">' + (zh ? '\u5DE5\u4F5C 25 \u5206\u9418 \u2192 \u5171\u632F\u547C\u5438 5 \u5206\u9418' : 'Work 25 min \u2192 Coherent breathing 5 min') + '</div>' +
+    '</div>';
+  frag.appendChild(pd);
+
+  // Stats card LAST (after everything else)
   if (currentUser && userStats) {
     var statsDiv = document.createElement('div');
     statsDiv.className = 'stats-card';
@@ -538,23 +584,6 @@ function renderHome() {
     frag.appendChild(statsDiv);
   }
 
-  // Tools section label
-  var tLabel = document.createElement('div');
-  tLabel.className = 'section-label';
-  tLabel.style.marginTop = '12px';
-  tLabel.textContent = zh ? '\u5DE5\u5177' : 'Tools';
-  frag.appendChild(tLabel);
-  // Pomodoro card
-  var pd = document.createElement('div');
-  pd.className = 'card';
-  pd.onclick = startPomo;
-  pd.innerHTML = '<div class="card-icon" style="color:var(--tomato)">\u{1F345}</div>' +
-    '<div class="card-body">' +
-      '<div class="card-row"><span class="card-name">' + (zh ? '\u856A\u8304\u547C\u5438' : 'Pomo Breathe') + '</span><span class="card-time">~2h</span></div>' +
-      '<div class="card-sub" style="color:var(--tomato);opacity:.8">' + (zh ? '\u5C08\u6CE8\u5DE5\u4F5C + \u5B9A\u6642\u547C\u5438' : 'Focus + Timed Breathing') + '</div>' +
-      '<div class="card-purpose">' + (zh ? '\u5DE5\u4F5C 25 \u5206\u9418 \u2192 \u5171\u632F\u547C\u5438 5 \u5206\u9418' : 'Work 25 min \u2192 Coherent breathing 5 min') + '</div>' +
-    '</div>';
-  frag.appendChild(pd);
   c.appendChild(frag);
   document.querySelector('.home-title').textContent = zh ? '\u547C\u5438\u6CD5' : 'Breathe';
   document.querySelector('.lang-btn').textContent = zh ? 'EN' : '\u4E2D';
@@ -564,6 +593,8 @@ function renderHome() {
   else fab.innerHTML = '\u{1F514}';
   // Update auth area for language change
   renderAuthArea();
+  // Update theme button
+  applyTheme();
 }
 
 function calcCustomTime() {
@@ -580,9 +611,9 @@ function initAudio() {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
 
-// Phase transition sounds (singing bowl)
+// Phase transition sounds (singing bowl) - ALWAYS play, not toggleable
 function playPhaseSound(phase) {
-  if (!soundOn || !audioCtx) return;
+  if (!audioCtx) return;
   var freqs = {inhale:[261.6,392,523.2], inhale2:[329.6,392], hold:[196,293.6], holdAfter:[196,293.6], exhale:[130.8,196,329.6], rest:[]};
   var vols = {inhale:.07, inhale2:.05, hold:.025, holdAfter:.025, exhale:.06, rest:0};
   var durs = {inhale:1.2, inhale2:.6, hold:1.2, holdAfter:1.2, exhale:1.2, rest:0};
@@ -722,14 +753,16 @@ function startBgSound(soundId) {
 }
 
 function updateSoundButtons() {
-  var opt = soundOptions.find(function(o) { return o.id === selectedSound; }) || soundOptions[0];
-  var icon = opt.iconChar;
-  var label = zh ? opt.nameZH : opt.nameEN;
-  var btns = [document.getElementById('sound-pick-btn'), document.getElementById('pomo-sound-pick-btn')];
+  var isMuted = (selectedSound === 'silent');
+  var btns = [document.getElementById('bg-sound-btn'), document.getElementById('pomo-bg-sound-btn')];
   btns.forEach(function(btn) {
     if (btn) {
-      btn.querySelector('.sp-icon').innerHTML = icon;
-      btn.querySelector('.sp-label').textContent = label;
+      btn.textContent = '\u266A';
+      if (isMuted) {
+        btn.classList.add('muted');
+      } else {
+        btn.classList.remove('muted');
+      }
     }
   });
 }
@@ -755,9 +788,8 @@ function showSoundPicker() {
 function selectSound(id) {
   selectedSound = id;
   localStorage.setItem('bgSound', id);
-  soundOn = (id !== 'silent');
   stopBgSound();
-  if (soundOn) {
+  if (id !== 'silent') {
     initAudio();
     startBgSound(id);
   }
@@ -774,8 +806,7 @@ function closeSoundPicker(e) {
 // ===================== BREATHING SESSION =====================
 function startSession(t, from) {
   initAudio();
-  soundOn = (selectedSound !== 'silent');
-  if (soundOn) startBgSound(selectedSound);
+  if (selectedSound !== 'silent') startBgSound(selectedSound);
   updateSoundButtons();
 
   cur = t;
@@ -821,6 +852,7 @@ function runStep() {
   glow.style.transition = 'transform ' + dur + 's ' + ease;
   circle.style.transform = 'scale(' + sc + ')';
   glow.style.transform = 'scale(' + sc + ')';
+  // Phase sounds ALWAYS play
   playPhaseSound(p);
   if (navigator.vibrate) navigator.vibrate(p === 'exhale' ? 40 : (p === 'hold' || p === 'holdAfter') ? 15 : 25);
   startArc();
