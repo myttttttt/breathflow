@@ -334,7 +334,13 @@ var currentUser = null;
 var userStats = null;
 
 // ===================== THEME =====================
-var isDayMode = localStorage.getItem('theme') === 'light';
+function getAutoTheme() {
+  var h = new Date().getHours();
+  return (h >= 6 && h < 18) ? 'light' : 'dark';
+}
+var themeOverride = localStorage.getItem('theme'); // 'light', 'dark', or null (auto)
+var isDayMode = themeOverride ? themeOverride === 'light' : getAutoTheme() === 'light';
+
 function applyTheme() {
   if (isDayMode) {
     document.documentElement.setAttribute('data-theme', 'light');
@@ -342,10 +348,7 @@ function applyTheme() {
     document.documentElement.removeAttribute('data-theme');
   }
   var btn = document.getElementById('theme-btn');
-  if (btn) {
-    // Show sun when in night mode (to switch to day), moon when in day mode (to switch to night)
-    btn.textContent = isDayMode ? '\u263E' : '\u2600';
-  }
+  if (btn) btn.textContent = isDayMode ? '\u263E' : '\u2600';
 }
 function toggleTheme() {
   isDayMode = !isDayMode;
@@ -353,6 +356,13 @@ function toggleTheme() {
   applyTheme();
 }
 applyTheme();
+// Auto-switch theme check every minute
+setInterval(function() {
+  if (!localStorage.getItem('theme')) {
+    var auto = getAutoTheme() === 'light';
+    if (auto !== isDayMode) { isDayMode = auto; applyTheme(); }
+  }
+}, 60000);
 
 // ===================== AUTH =====================
 firebase.auth().onAuthStateChanged(function(user) {
