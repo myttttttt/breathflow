@@ -22,10 +22,22 @@
   --font:-apple-system,BlinkMacSystemFont,'SF Pro Rounded','Helvetica Neue',sans-serif;
 }
 html[data-theme="light"]{
-  --bg:#f5f5f0;--card:#ffffff;
-  --text:rgba(0,0,0,.85);--text2:rgba(0,0,0,.45);
-  --card-shadow:0 1px 4px rgba(0,0,0,.08);
+  --bg:#f0ede6;--card:rgba(255,255,255,.75);
+  --text:#2c2c2e;--text2:#8e8e93;
+  --card-shadow:0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+  --coral:#d4654e;--blue:#4a7faa;--indigo:#5b52a0;--sage:#5a9a6a;--tomato:#c94e38;
+  --teal:#3d8f82;
 }
+html[data-theme="light"] body{background:linear-gradient(175deg,#f0ede6 0%,#e8e4db 50%,#dfd9ce 100%)}
+html[data-theme="light"] .home-title{color:#3a3a3c;letter-spacing:3px}
+html[data-theme="light"] .card{background:rgba(255,255,255,.65);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.5)}
+html[data-theme="light"] .card-name{color:#1c1c1e}
+html[data-theme="light"] .section-label{color:#8e8e93;font-weight:600}
+html[data-theme="light"] .top-btn,html[data-theme="light"] .lang-btn,html[data-theme="light"] .theme-btn,html[data-theme="light"] .login-btn{background:rgba(255,255,255,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.5)}
+html[data-theme="light"] .user-dropdown{background:rgba(255,255,255,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.12);border:1px solid rgba(0,0,0,.06)}
+html[data-theme="light"] .reminder-sheet{background:#f0ede6}
+html[data-theme="light"] .reminder-item{background:rgba(255,255,255,.6)}
+html[data-theme="light"] .reminder-save{background:#5a9a6a;color:#fff}
 html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;-webkit-tap-highlight-color:transparent}
 
 /* HOME */
