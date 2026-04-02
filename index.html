@@ -581,7 +581,7 @@ function renderHome() {
   pd.onclick = startPomo;
   pd.innerHTML = '<div class="card-icon" style="color:var(--tomato)">\u{1F345}</div>' +
     '<div class="card-body">' +
-      '<div class="card-row"><span class="card-name">' + (zh ? '\u856A\u8304\u547C\u5438' : 'Pomo Breathe') + '</span><span class="card-time">~2h</span></div>' +
+      '<div class="card-row"><span class="card-name">' + (zh ? '\u756A\u8304\u547C\u5438\u6CD5' : 'Pomo Breathe') + '</span><span class="card-time">~2h</span></div>' +
       '<div class="card-sub" style="color:var(--tomato);opacity:.8">' + (zh ? '\u5C08\u6CE8\u5DE5\u4F5C + \u5B9A\u6642\u547C\u5438' : 'Focus + Timed Breathing') + '</div>' +
       '<div class="card-purpose">' + (zh ? '\u5DE5\u4F5C 25 \u5206\u9418 \u2192 \u5171\u632F\u547C\u5438 5 \u5206\u9418' : 'Work 25 min \u2192 Coherent breathing 5 min') + '</div>' +
     '</div>';
@@ -996,7 +996,7 @@ function renderPomoUI() {
     dots += '<div class="pomo-dot ' + cls + '"></div>';
   }
   document.getElementById('pomo-dots').innerHTML = dots;
-  document.getElementById('pomo-label').textContent = zh ? '\u7B2C ' + s.round + ' / ' + POMO_TOTAL + ' \u500B\u856A\u8304' : 'Pomodoro ' + s.round + ' / ' + POMO_TOTAL;
+  document.getElementById('pomo-label').textContent = zh ? '\u7B2C ' + s.round + ' / ' + POMO_TOTAL + ' \u500B\u756A\u8304' : 'Pomodoro ' + s.round + ' / ' + POMO_TOTAL;
   document.getElementById('pomo-pause').textContent = pomoPaused ? (zh ? '\u7E7C\u7E8C' : 'Resume') : (zh ? '\u66AB\u505C' : 'Pause');
   document.getElementById('pomo-arc').style.stroke = s.phase === 'work' ? 'var(--tomato)' : 'var(--sage)';
 }
@@ -1074,7 +1074,7 @@ function finishPomo() {
   d.classList.add('active');
   d.style.color = 'var(--tomato)';
   document.getElementById('done-title').textContent = zh ? '\u592A\u68D2\u4E86\uFF01' : 'Great Job!';
-  document.getElementById('done-sub').textContent = zh ? '\u5B8C\u6210 ' + POMO_TOTAL + ' \u500B\u856A\u8304 + ' + (POMO_TOTAL - 1) + ' \u6B21\u547C\u5438\u7DF4\u7FD2' : POMO_TOTAL + ' pomodoros + ' + (POMO_TOTAL - 1) + ' breathing sessions';
+  document.getElementById('done-sub').textContent = zh ? '\u5B8C\u6210 ' + POMO_TOTAL + ' \u500B\u756A\u8304 + ' + (POMO_TOTAL - 1) + ' \u6B21\u547C\u5438\u7DF4\u7FD2' : POMO_TOTAL + ' pomodoros + ' + (POMO_TOTAL - 1) + ' breathing sessions';
   document.getElementById('done-btn').textContent = zh ? '\u7D50\u675F' : 'Done';
   document.getElementById('done-btn').style.background = 'rgba(232,99,74,.2)';
   // Hide streak for pomo done
